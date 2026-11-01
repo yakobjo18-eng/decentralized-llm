@@ -51,9 +51,13 @@ Phase 3 (schema 3) adds:
     hardware profile instead of the real machine's (see
     docs/SIMULATED_HARDWARE.md).
 
-Deliberately NOT yet implemented here (see docs/DEVELOPMENT_STATUS.md):
-  - Model shard loading / layer execution (worker/inference,
-    worker/execution) -- Phase 4 and Phase 6.
+Phase 6 adds:
+  - When execution_enabled is true, the StageExecution service
+    (worker/execution/) starts on its OWN gRPC server and port
+    (execution_listen_host:execution_listen_port, loopback by default),
+    separate from the Health server. Registration and heartbeats are
+    unchanged: the orchestrator is not told about the service. See
+    docs/REMOTE_EXECUTION.md.
 """
 
 from __future__ import annotations
@@ -216,6 +220,20 @@ def run(config_path: str) -> None:
     health_server = create_server(cfg.worker_id, cfg.listen_address)
     health_server.start()
     logger.info("health gRPC service listening on %s", cfg.listen_address)
+    execution_server = None
+    if cfg.execution_enabled:
+        from worker.execution.server import start_from_config
+
+        try:
+            execution_server, _ = start_from_config(cfg)
+        except Exception:
+            health_server.stop(grace=1)
+            raise
+
+    def _stop_servers(grace: float) -> None:
+        if execution_server is not None:
+            execution_server.stop(grace=grace).wait(grace + 1)
+        health_server.stop(grace=grace).wait(grace + 1)
 
     registry_client = RegistryClient(cfg.orchestrator_address)
     own_address = _own_advertised_address(cfg)
@@ -244,7 +262,7 @@ def run(config_path: str) -> None:
         logger.info("shutdown requested before a connection to the orchestrator succeeded")
         registry_client.close()
         profiler.close()
-        health_server.stop(grace=1)
+        _stop_servers(1)
         return
 
     if not response.accepted:
@@ -258,7 +276,7 @@ def run(config_path: str) -> None:
         )
         registry_client.close()
         profiler.close()
-        health_server.stop(grace=1)
+        _stop_servers(1)
         return
     logger.info("registered with orchestrator: %s", response.message)
 
@@ -321,7 +339,7 @@ def run(config_path: str) -> None:
             logger.warning("deregister failed", exc_info=True)
         registry_client.close()
         profiler.close()
-        health_server.stop(grace=2).wait(3)
+        _stop_servers(2)
         logger.info("worker shutdown complete")
 
 

@@ -34,7 +34,7 @@ from partitioner.execution.interface import (
     expected_output,
 )
 from partitioner.execution.limits import ExecutionLimits, check_token_ids, preflight
-from partitioner.execution.loader import LOCAL_EMULATION, MODES, REAL_MODE, ExecutionRejected, load_for_execution
+from partitioner.execution.loader import LOCAL_EMULATION, REAL_MODE, ExecutionRejected, load_for_execution
 
 RESULT_SCHEMA_VERSION = 1
 # Partitioned vs. unpartitioned reference, fp32, same kernels and
@@ -109,8 +109,9 @@ def execute_plan(
     include_logits: bool = False,
     stage_factory: Optional[Callable] = None,
 ) -> dict:
-    if mode not in MODES:
-        raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
+    if mode not in (REAL_MODE, LOCAL_EMULATION):
+        raise ValueError(f"mode must be {REAL_MODE!r} or {LOCAL_EMULATION!r}, got {mode!r} "
+                         "(remote execution: partitioner.execution.remote.execute_plan_remote)")
     t0 = time.perf_counter()
     host = local_hostname or socket.gethostname()
     request_id = request_id or uuid.uuid4().hex

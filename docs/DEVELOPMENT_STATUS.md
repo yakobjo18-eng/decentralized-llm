@@ -1,6 +1,6 @@
 # Development Status
 
-Last updated: 2026-11-01 (Phase 5 -- minimal local inference execution)
+Last updated: 2026-11-01 (Phase 6 -- remote stage execution over gRPC)
 
 ## Completed phases
 
@@ -537,10 +537,139 @@ messages, no tensor serialization), physical multi-machine inference,
 GPT-2 distributed (or any) execution, quantized inference, KV cache and
 generation, padding and attention masks.
 
+### Phase 6 — Remote stage execution over gRPC, 2026-11-01
+
+The first genuine remote execution path: a tiny-model request runs its
+stages **in separate worker processes**, and activations travel between
+them as gRPC messages. Guide: [REMOTE_EXECUTION.md](REMOTE_EXECUTION.md).
+
+**Verification scope:**
+- **Local processes on Computer 1 only** (127.0.0.1).
+- **No physical multi-machine test was run.** Computers 2 and 3 are
+  still unavailable.
+- Results report the workers' self-reported hostnames and pids. Every
+  run here shows one hostname, and the result text says it was not a
+  multi-machine run.
+
+**Implemented and tested locally:**
+- **Protocol** `decentralizedllm.execution.v1.StageExecution`
+  (`shared/proto/stage_execution.proto`, `PROTOCOL_VERSION_1`):
+  - a single `ExecuteStage` RPC, separate from WorkerRegistry and
+    Health, on its own server and port;
+  - requests carry request id, plan id, the plan itself, model id,
+    config fingerprint, target worker, stage index and unit range, and
+    the input tensor;
+  - responses carry a status (OK / REJECTED / BUSY / FAILED /
+    DEADLINE_EXCEEDED), the output tensor, timing, a structured error
+    with an `executed` flag, and the worker's self-reported host and pid.
+
+  Python stubs and Go stubs (`orchestrator/internal/proto/execution`,
+  unused for now) were generated **for this file only**, so no existing
+  generated code changed. `scripts/generate_protos.ps1` now lists it.
+- **Tensor format `raw-le-c-v1`** (`partitioner/execution/wire.py`):
+  - little-endian, row-major, no header; fp32 and int64 only;
+  - encoding, dtype, kind, rank, dimensions, byte length and size limit
+    are checked before allocating;
+  - finite values are checked right after;
+  - no pickle.
+- **Worker service** (`worker/worker/execution/`). Its checks, in order:
+  - concurrency slot (`BUSY` if none), protocol version, fields, target
+    worker id, required deadline;
+  - plan hash and plan validation (cached per plan id);
+  - **assignment**: the stage must be this worker id on this host,
+    REAL, with the requested range;
+  - tensor-vs-stage checks and input/output/batch/sequence limits, all
+    before decoding;
+  - execution of only that stage's components;
+  - a deadline re-check after execution.
+
+  Logs carry no tensor values, payload bytes or plan bodies. The bind
+  policy allows loopback and private IPs, needs an opt-in for 0.0.0.0,
+  and refuses public IPs and hostnames. A SIMULATED worker refuses to
+  start the service. Two ways to run it:
+  - `python -m worker.main` starts it only if `execution_enabled: true`;
+  - `python -m worker.execution` runs it alone.
+- **Coordinator** (`partitioner/execution/remote.py`,
+  `execute --remote --endpoint ID=HOST:PORT`):
+  - validates the plan (Phase 5 loader, new `remote` mode) and requires
+    an endpoint per stage worker;
+  - checks the input and limits, then sends the stages in order;
+  - checks every response: version, request id, the **responding worker
+    id**, stage index, and the output tensor;
+  - compares the final logits with the Phase 5 local reference
+    (`REMOTE_REFERENCE_ATOL = 1e-4`; observed **0.0**);
+  - **retries only requests known not to have executed** (channel never
+    ready, BUSY, gRPC RESOURCE_EXHAUSTED), up to 3 attempts by default;
+  - reports deadline, mid-call loss and worker FAILED as
+    `AMBIGUOUS_FAILURE` or the worker's error code, **not retried**.
+
+**Observed on Computer 1** (one run, not a benchmark):
+- two `python -m worker.execution` processes ran stage 0 (units [0, 3))
+  and stage 1 (units [3, 7));
+- output `[2, 8, 128]`, next tokens `[60, 96]`, reference diff 0.0;
+- requests about 12.5 / 14.5 KB, mostly the plan JSON; responses 2.2 /
+  8.3 KB;
+- round trips 128 ms (cold caches) and 26 ms;
+- each service-only process took about 11 s to start (torch +
+  transformers import).
+
+**Changes to earlier phases:**
+- **Worker:** `config/loader.py` gained `execution_*` settings, off and
+  loopback by default. `main.py` gained a few lines to start and stop
+  the optional server. **Registration, heartbeats and Health are
+  unchanged**: the registered address is still the Health server, as the
+  integration test asserts.
+- **Partitioner:**
+  - the loader gained `REMOTE_MODE`;
+  - the Phase 5 runner refuses remote mode explicitly;
+  - two messages now point to `--remote`: the multi-stage reason in the
+    planner's `executable_reason`, and the local-mode loader problem.
+    Existing assertions still hold.
+- **CLI:** `--remote`, `--endpoint`, `--stage-timeout`,
+  `--connect-timeout`, `--max-attempts`. Local modes are unchanged.
+- **Config and docs:** `worker.example.yaml`, `.env.example`,
+  `NETWORKING.md`, `EXECUTION.md` and the partitioner README were
+  updated.
+- Nothing was installed, and no model was downloaded.
+
+**Not implemented:**
+- physical multi-machine validation;
+- authentication or TLS (the protocol is **unauthenticated and
+  unencrypted**);
+- endpoint discovery through the orchestrator;
+- automatic placement, fault-tolerant rescheduling or KV cache;
+- GPT-2 execution, quantized inference.
+
 ## In progress
 
-None. Phase 5 is complete. Waiting for approval before the next phase.
+None. Phase 6 is complete. Waiting for approval before the next phase.
 Nothing was committed and nothing was installed.
+
+## Test results (actual output, Phase 6, 2026-11-01)
+
+All on Computer 1. **Local-process tests only; no physical multi-machine test was run.**
+
+**Partitioner** (`cd model-partitioner; python -m pytest -q`): **291 passed, 0 failed, 0 skipped**
+```
+tests/test_remote_wire.py         24  (new: round trips, exact byte layout, malformed payloads, size limit before allocation, NaN/inf, no pickle)
+tests/test_remote_service.py      38  (new: worker service over real gRPC in-process: version, malformed, wrong worker,
+                                       unassigned stage, plan hash/validity, SIMULATED, stage mismatch, host, tensors,
+                                       limits, deadline required/too short/exceeded, BUSY, FAILED, message size, logs)
+tests/test_remote_execution.py    28  (new: Part A in-process servers: 2/3-stage pipelines, missing endpoint, misrouting,
+                                       unreachable -> bounded retries, BUSY -> retry -> OK, ambiguous deadline not retried,
+                                       failure not retried, reference mismatch, CLI;
+                                       Part B SEPARATE PROCESSES: 2- and 3-worker pipelines over real gRPC, CLI,
+                                       killed worker process)
+tests/test_remote_worker_main.py   1  (new: real Go orchestrator + 2 `worker.main` processes with execution enabled:
+                                       register, execute, keep heartbeating, graceful shutdown)
+Phase 4-5 files                  200  (unchanged assertions)
+```
+
+**Worker** (`cd worker; python -m pytest -q`): **137 passed** (120 earlier + 17 new in `tests/test_execution_config.py`).
+
+**Go** (`cd orchestrator; gofmt -l .; go vet ./...; go test ./... -v -count=1`): gofmt clean, vet clean, **101 `--- PASS`, 0 `--- FAIL`**.
+
+**Phase 1 smoke test** (`powershell -ExecutionPolicy Bypass -File scripts/smoke_test_phase1.ps1`): **PASS**.
 
 ## Test results (actual output, Phase 5, 2026-11-01)
 
@@ -859,6 +988,18 @@ via `go test`/`pytest` unit coverage of the deregister path).
 
 ## Known issues / blockers
 
+- (Phase 6) Remote execution has run **only between processes on
+  Computer 1**. Cross-machine behaviour, firewall rules for port 50200
+  and cross-CPU numerical agreement are untested. The 1e-4 tolerance is
+  reasoned, not measured.
+- (Phase 6) StageExecution is **unauthenticated and unencrypted**.
+  Identity and assignment checks prevent misrouting, not attacks.
+- (Phase 6) Endpoints are passed by hand. The orchestrator does not know
+  them, because registration was deliberately left unchanged.
+- (Phase 6) Each worker process costs about 700 MiB (torch +
+  transformers). Several processes at once strain Computer 1, which runs
+  at about 80% RAM use.
+
 - (Phase 5) Execution exists only for the built-in tiny model, with
   untrained formula weights, fp32, a single prefill pass and no KV
   cache. Multi-stage execution is single-process emulation only.
@@ -912,7 +1053,12 @@ via `go test`/`pytest` unit coverage of the deregister path).
 
 ## Next implementation steps
 
-0. (After Phase 5, on approval) A remote `ActivationTransport`: a
+- (After Phase 6, on approval) Run the two-worker pipeline across
+  physical machines once Computers 2/3 are reachable (REMOTE_EXECUTION.md,
+  "Private-LAN setup"). Then consider authentication (TLS with mutual
+  auth or a shared token), endpoint advertisement through registration,
+  and worker-to-worker forwarding instead of hub-and-spoke.
+0. (After Phase 5; done in Phase 6) A remote `ActivationTransport`: a
    protobuf message carrying every `ActivationMeta` field plus the raw
    tensor bytes; stages hosted inside the worker process; then the tiny
    model across two worker processes, labelled as such until two

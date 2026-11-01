@@ -68,8 +68,8 @@ def executable_status(model_id: str, precision, stage_sources: Sequence[str]) ->
         reasons.append("the plan uses SIMULATED workers (it can only be emulated locally)")
     if len(stage_sources) > 1:
         reasons.append(
-            "a multi-stage plan needs activation transport between workers, which is not implemented "
-            "(it can only be emulated in one process)"
+            "a multi-stage plan cannot run in one process: it needs activation transport between workers "
+            "(Phase 6: run it with `execute --remote`, one worker process per stage, or emulate it locally)"
         )
     if reasons:
         return False, "; ".join(reasons)

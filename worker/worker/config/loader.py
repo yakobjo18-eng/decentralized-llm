@@ -56,6 +56,23 @@ class WorkerConfig:
     # 0.0.0.0. On a Windows LAN where hostnames don't resolve between
     # machines, set this to the worker's LAN IP (see docs/NETWORKING.md).
     advertise_host: str = ""
+    # Phase 6: the StageExecution service (worker/execution/). Off by
+    # default; when on, it runs on its OWN gRPC server, separate from
+    # the Health server above, bound to execution_listen_host -- loopback
+    # unless configured. It is unauthenticated: bind it to a private-LAN
+    # address only (docs/REMOTE_EXECUTION.md).
+    execution_enabled: bool = False
+    execution_listen_host: str = "127.0.0.1"
+    execution_listen_port: int = 50200
+    # 0.0.0.0 / :: are refused unless this is set (they include any
+    # public interface the machine may have).
+    execution_allow_all_interfaces: bool = False
+    execution_max_tensor_mib: float = 16.0
+    execution_max_message_mib: float = 32.0
+    execution_max_concurrent: int = 2
+    execution_max_batch: int = 8
+    execution_max_sequence: int = 0  # 0 = the model's maximum positions
+    execution_min_deadline_seconds: float = 0.05
 
     @property
     def listen_address(self) -> str:
@@ -95,6 +112,16 @@ def load(config_path: Optional[str] = None, env_file: Optional[str] = ".env") ->
         backend_compute_test=_as_bool(data.get("backend_compute_test", True)),
         simulated_profile=str(data.get("simulated_profile") or ""),
         advertise_host=str(data.get("advertise_host") or ""),
+        execution_enabled=_as_bool(data.get("execution_enabled", False)),
+        execution_listen_host=str(data.get("execution_listen_host", "127.0.0.1")),
+        execution_listen_port=int(data.get("execution_listen_port", 50200)),
+        execution_allow_all_interfaces=_as_bool(data.get("execution_allow_all_interfaces", False)),
+        execution_max_tensor_mib=float(data.get("execution_max_tensor_mib", 16.0)),
+        execution_max_message_mib=float(data.get("execution_max_message_mib", 32.0)),
+        execution_max_concurrent=int(data.get("execution_max_concurrent", 2)),
+        execution_max_batch=int(data.get("execution_max_batch", 8)),
+        execution_max_sequence=int(data.get("execution_max_sequence", 0)),
+        execution_min_deadline_seconds=float(data.get("execution_min_deadline_seconds", 0.05)),
     )
 
     _apply_env_overrides(cfg)
@@ -124,6 +151,14 @@ def _apply_env_overrides(cfg: WorkerConfig) -> None:
         cfg.simulated_profile = value
     if value := os.environ.get("WORKER_ADVERTISE_HOST"):
         cfg.advertise_host = value
+    if value := os.environ.get("WORKER_EXECUTION_ENABLED"):
+        cfg.execution_enabled = _as_bool(value)
+    if value := os.environ.get("WORKER_EXECUTION_LISTEN_HOST"):
+        cfg.execution_listen_host = value
+    if value := os.environ.get("WORKER_EXECUTION_LISTEN_PORT"):
+        cfg.execution_listen_port = int(value)
+    if value := os.environ.get("WORKER_EXECUTION_ALLOW_ALL_INTERFACES"):
+        cfg.execution_allow_all_interfaces = _as_bool(value)
 
 
 def _as_bool(value) -> bool:

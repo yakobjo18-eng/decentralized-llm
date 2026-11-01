@@ -14,13 +14,17 @@ takes a validated plan for the built-in test model
 - on this machine's single REAL worker; or
 - as a labelled emulation of a multi-stage plan.
 
-There is no tensor transport between machines, no GPT-2 execution and
+Phase 6 adds **remote stage execution**: `execute --remote` sends
+each stage to its assigned worker process's StageExecution service over
+gRPC (unauthenticated; tested so far with separate processes on one
+computer, not across machines). There is still no GPT-2 execution and
 no quantized execution. GPT-2 remains plannable only.
 
 Docs: [MODEL_PARTITIONING.md](../docs/MODEL_PARTITIONING.md) ·
 [MEMORY_ESTIMATION.md](../docs/MEMORY_ESTIMATION.md) ·
 [PARTITION_PLAN_SCHEMA.md](../docs/PARTITION_PLAN_SCHEMA.md) ·
-[EXECUTION.md](../docs/EXECUTION.md) (Phase 5)
+[EXECUTION.md](../docs/EXECUTION.md) (Phase 5) ·
+[REMOTE_EXECUTION.md](../docs/REMOTE_EXECUTION.md) (Phase 6)
 
 ```
 partitioner/
@@ -39,11 +43,13 @@ partitioner/
     interface.py   versioned stage interface: StageSpec, Activation, StageExecutor, ActivationTransport
     tiny_gpt2.py   builtin:tiny-gpt2-v1: deterministic weights, explicit math, reference forward, stage executor
     models.py      registry of executable models; the planner's `executable` rule
-    loader.py      load + validate a plan for execution (real / local-emulation modes)
+    loader.py      load + validate a plan for execution (real / local-emulation / remote modes)
     limits.py      batch / sequence / activation / weight limits, checked before allocation
-    runner.py      execute_plan() -> structured result
+    runner.py      execute_plan() -> structured result (local modes)
+    wire.py        Phase 6 tensor codec (raw-le-c-v1), validated before allocation
+    remote.py      Phase 6 coordinator: execute_plan_remote() over gRPC, bounded safe retries
 examples/        plans generated on Computer 1 (2026-10-31)
-tests/           pytest (200 tests: 113 Phase 4 + 87 Phase 5)
+tests/           pytest (291 tests: 113 Phase 4 + 87 Phase 5 + 91 Phase 6)
 ```
 
 ## Quick start
@@ -91,6 +97,14 @@ model. Every stage carries the measured ~700 MiB torch + transformers
 overhead. Pass the same `--ram-margin-percent` / `--ram-margin-min-gib`
 to both `plan` and `execute` to use a smaller margin deliberately. See
 [EXECUTION.md](../docs/EXECUTION.md).
+
+Remote (Phase 6), one worker process per stage. See
+[REMOTE_EXECUTION.md](../docs/REMOTE_EXECUTION.md) for worker setup and
+security:
+
+```powershell
+python -m partitioner execute plan.json --remote --tokens "1,2,3" --endpoint w-a=127.0.0.1:50201 --endpoint w-b=127.0.0.1:50202
+```
 
 ```python
 from partitioner.execution import execute_plan, REAL_MODE

@@ -41,3 +41,20 @@ backend_compute_test: true
 # Leave empty to profile the real machine. A simulated worker is only
 # accepted by an orchestrator started with allow_simulated_workers: true.
 simulated_profile: ""
+
+# --- Phase 6: StageExecution service (docs/REMOTE_EXECUTION.md) ---
+# UNAUTHENTICATED and unencrypted: enable only on a trusted private LAN.
+# It runs on its own gRPC server/port, separate from listen_host/port.
+execution_enabled: false
+# Loopback by default. For a LAN, use this machine's PRIVATE LAN IP.
+# Public addresses and hostnames are refused; 0.0.0.0 needs
+# execution_allow_all_interfaces: true.
+execution_listen_host: "127.0.0.1"
+execution_listen_port: 50200
+execution_allow_all_interfaces: false
+execution_max_tensor_mib: 16
+execution_max_message_mib: 32
+execution_max_concurrent: 2
+execution_max_batch: 8
+execution_max_sequence: 0          # 0 = the model's maximum positions
+execution_min_deadline_seconds: 0.05

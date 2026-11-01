@@ -6,11 +6,13 @@
                                  [--orchestrator http://HOST:8080] [--out plan.json] [...]
   python -m partitioner validate PLAN.json --model gpt2 [worker sources as for plan]
   python -m partitioner execute  PLAN.json --tokens "1,2,3;4,5,6" (--local WORKER_ID | --emulate-stages-locally)
+  python -m partitioner execute  PLAN.json --tokens "1,2,3" --remote --endpoint W1=HOST:PORT --endpoint W2=HOST:PORT
 
 Worker sources can be combined. `plan`, `validate` and `memory` only
 plan. `execute` (Phase 5) runs the built-in test model
-builtin:tiny-gpt2-v1 for real, in this one process; it never moves
-tensors between machines.
+builtin:tiny-gpt2-v1 for real, in this one process; with --remote
+(Phase 6) each stage runs on its assigned worker's StageExecution
+service over gRPC instead.
 """
 
 from __future__ import annotations
@@ -213,10 +215,27 @@ def _parse_tokens(text: str):
 def _cmd_execute(args) -> int:
     from partitioner.execution import LOCAL_EMULATION, REAL_MODE, ExecutionLimits, execute_plan
 
-    if bool(args.local) == bool(args.emulate_stages_locally):
-        print("choose exactly one of --local WORKER_ID (real single-worker execution on this machine) or "
-              "--emulate-stages-locally (all stages in this process, labelled as emulation)", file=sys.stderr)
+    if [bool(args.local), args.emulate_stages_locally, args.remote].count(True) != 1:
+        print("choose exactly one of --local WORKER_ID (real single-worker execution on this machine), "
+              "--emulate-stages-locally (all stages in this process, labelled as emulation) or "
+              "--remote (each stage on its worker over gRPC, with --endpoint ID=HOST:PORT)", file=sys.stderr)
         return 2
+    endpoints = {}
+    if args.endpoint and not args.remote:
+        print("--endpoint is only used with --remote", file=sys.stderr)
+        return 2
+    for item in args.endpoint:
+        from partitioner.execution.remote import parse_endpoint
+
+        try:
+            wid, addr = parse_endpoint(item)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        if wid in endpoints:
+            print(f"--endpoint given twice for worker {wid!r}", file=sys.stderr)
+            return 2
+        endpoints[wid] = addr
     try:
         tokens = _parse_tokens(args.tokens)
     except ValueError as exc:
@@ -230,12 +249,21 @@ def _cmd_execute(args) -> int:
         max_weight_bytes=int(args.max_weight_mib * mib),
     )
     workers = {w.worker_id: w for w in _workers(args, run_compute_test=False)} or None
-    result = execute_plan(
-        args.plan, tokens,
-        mode=REAL_MODE if args.local else LOCAL_EMULATION,
-        workers=workers, local_worker_id=args.local, limits=limits,
-        check_reference=not args.no_reference_check, include_logits=args.include_logits,
-    )
+    if args.remote:
+        from partitioner.execution.remote import RemoteOptions, execute_plan_remote
+
+        options = RemoteOptions(stage_timeout_seconds=args.stage_timeout, connect_timeout_seconds=args.connect_timeout,
+                                max_attempts=args.max_attempts, max_tensor_bytes=int(args.max_activation_mib * mib),
+                                max_message_bytes=int(args.max_activation_mib * mib) * 2 + 4 * mib)
+        result = execute_plan_remote(args.plan, tokens, endpoints, workers=workers, limits=limits, options=options,
+                                     check_reference=not args.no_reference_check, include_logits=args.include_logits)
+    else:
+        result = execute_plan(
+            args.plan, tokens,
+            mode=REAL_MODE if args.local else LOCAL_EMULATION,
+            workers=workers, local_worker_id=args.local, limits=limits,
+            check_reference=not args.no_reference_check, include_logits=args.include_logits,
+        )
     text = json.dumps(result, indent=2, default=str)
     if args.out:
         from pathlib import Path
@@ -243,7 +271,7 @@ def _cmd_execute(args) -> int:
         Path(args.out).write_text(text, encoding="utf-8")
     print(text)
     err = result["error"]
-    summary = f"{result['status'].upper()} ({result['execution_mode']}, distributed: false)"
+    summary = f"{result['status'].upper()} ({result['execution_mode']}, distributed: {str(result['distributed']).lower()})"
     if err:
         detail = err["problems"][0] if err["problems"] else f"{err['type']}: {err['message'].splitlines()[0]}"
         more = f" (+{len(err['problems']) - 1} more)" if len(err["problems"]) > 1 else ""
@@ -274,6 +302,14 @@ def main(argv: List[str] = None) -> int:
     p.add_argument("--tokens", required=True, help='token ids, e.g. "1,2,3" or "1,2,3;4,5,6" for a batch of two')
     p.add_argument("--emulate-stages-locally", action="store_true",
                    help="run EVERY stage in this process regardless of its assigned worker (labelled; not distributed)")
+    p.add_argument("--remote", action="store_true",
+                   help="Phase 6: run each stage on its assigned worker's StageExecution service over gRPC")
+    p.add_argument("--endpoint", action="append", default=[], metavar="WORKER_ID=HOST:PORT",
+                   help="--remote: a worker's StageExecution address (one per stage worker)")
+    p.add_argument("--stage-timeout", type=float, default=30.0, help="--remote: gRPC deadline per stage, seconds")
+    p.add_argument("--connect-timeout", type=float, default=3.0, help="--remote: connection wait per attempt, seconds")
+    p.add_argument("--max-attempts", type=int, default=3,
+                   help="--remote: attempts per stage, retried only when the request was not executed")
     _worker_args(p)
     p.add_argument("--max-batch", type=int, default=8)
     p.add_argument("--max-seq", type=int, default=None, help="default: the model's maximum positions")

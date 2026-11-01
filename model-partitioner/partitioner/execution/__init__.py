@@ -1,9 +1,9 @@
 """Phase 5: minimal, local, real inference for a validated plan.
 
-Executes only the built-in test model builtin:tiny-gpt2-v1, in one
-process. The stage interface (interface.py) is versioned so a later
-phase can add a transport between physical workers; no such transport
-exists yet.
+Executes only the built-in test model builtin:tiny-gpt2-v1. Local
+modes (runner.py) run every stage in one process. Phase 6 adds remote
+execution (remote.py, wire.py): each stage runs on its assigned worker's
+StageExecution service, with activations sent over gRPC (unauthenticated).
 """
 
 from partitioner.execution.interface import (

@@ -42,7 +42,12 @@ from partitioner.workers import REAL, SIMULATED
 
 REAL_MODE = "real"
 LOCAL_EMULATION = "local-emulation"
-MODES = (REAL_MODE, LOCAL_EMULATION)
+# Phase 6: each stage runs on its assigned worker process over gRPC
+# (partitioner/execution/remote.py). Same plan checks as REAL, minus
+# "every stage is this process"; the plan's `executable` flag (which
+# describes single-process execution) is not required.
+REMOTE_MODE = "remote"
+MODES = (REAL_MODE, LOCAL_EMULATION, REMOTE_MODE)
 
 
 class ExecutionRejected(Exception):
@@ -206,11 +211,19 @@ def load_for_execution(
                 if st.get("worker_id") != local_worker_id:
                     problems.append(
                         f"stage {st.get('stage_index')} is assigned to worker {st.get('worker_id')!r}, but this process is "
-                        f"{local_worker_id!r}: remote stage execution / activation transport is not implemented"
+                        f"{local_worker_id!r}: in local mode, cross-process activation transport is not implemented "
+                        "(use remote mode, `execute --remote`, to run each stage on its own worker)"
                     )
                 elif st.get("hostname") != host:
                     problems.append(f"stage {st.get('stage_index')} was planned for host {st.get('hostname')!r}, "
                                     f"this is {host!r}")
+    elif mode == REMOTE_MODE:
+        if plan.get("includes_simulated_workers") or SIMULATED in sources:
+            problems.append("plan includes SIMULATED workers: refusing remote execution (SIMULATED profiles are not "
+                            "physical machines)")
+        if workers is None:
+            warnings.append("Worker records were not supplied to the coordinator, so worker existence and capacity were "
+                            "not re-checked here; each worker still validates the plan and its own assignment.")
     else:
         warnings.append(
             f"LOCAL EMULATION: all {len(stages)} stage(s) run sequentially in this one process on {host}. The plan's "

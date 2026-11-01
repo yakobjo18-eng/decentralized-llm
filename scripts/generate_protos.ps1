@@ -24,11 +24,12 @@ $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 $protoFiles = @(
     "shared/proto/common.proto",
     "shared/proto/registry.proto",
-    "shared/proto/health.proto"
+    "shared/proto/health.proto",
+    "shared/proto/stage_execution.proto"
 )
 
 Write-Output "Generating Go code -> orchestrator/internal/proto/..."
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "orchestrator/internal/proto/common","orchestrator/internal/proto/registry","orchestrator/internal/proto/health"
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "orchestrator/internal/proto/common","orchestrator/internal/proto/registry","orchestrator/internal/proto/health","orchestrator/internal/proto/execution"
 python -m grpc_tools.protoc -I shared/proto `
     --go_out=. --go_opt=paths=import `
     --go-grpc_out=. --go-grpc_opt=paths=import `

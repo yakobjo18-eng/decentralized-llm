@@ -12,7 +12,8 @@ onward) -- Phase 1's own smoke test runs everything over loopback
 |---|---|---|
 | Orchestrator REST API | 8080/tcp | Inbound, from the frontend/dashboard machine and operators |
 | Orchestrator gRPC (WorkerRegistry) | 9090/tcp | Inbound, from every worker machine |
-| Worker gRPC (Health, and later tensor transport) | 50100/tcp (configurable per worker) | Inbound, from the orchestrator and from adjacent pipeline-stage workers |
+| Worker gRPC (Health) | 50100/tcp (configurable per worker) | Inbound, from the orchestrator |
+| Worker StageExecution (Phase 6, off by default, **unauthenticated**) | 50200/tcp (`execution_listen_port`) | Inbound, from the coordinator only. Bind to the private LAN IP and allow `LocalSubnet` only; see [REMOTE_EXECUTION.md](REMOTE_EXECUTION.md) |
 
 All of these are configurable (never hardcoded) -- see
 `.env.example`, `orchestrator/orchestrator.example.yaml`, and

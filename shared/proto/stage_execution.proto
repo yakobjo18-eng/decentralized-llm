@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+// StageExecution is the Phase 6 data-plane service: a coordinator asks
+// one worker to run ONE contiguous stage of a validated partition plan
+// on an input activation and return the output activation.
+//
+// Deliberately separate from WorkerRegistry / Health (control plane):
+// it has its own service, its own server and port on the worker, and
+// its own size, concurrency and deadline limits. See
+// docs/REMOTE_EXECUTION.md.
+//
+// SECURITY: this protocol is UNAUTHENTICATED and UNENCRYPTED (plain
+// gRPC, insecure channel). worker ids, hostnames and plans are claims,
+// not proofs. Run it only on a trusted private network.
+package decentralizedllm.execution.v1;
+
+option go_package = "orchestrator/internal/proto/execution;executionpb";
+
+service StageExecution {
+  rpc ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse);
+}
+
+// Bumped on any incompatible change. Workers reject other versions.
+// Current: 1.
+enum ProtocolVersion {
+  PROTOCOL_VERSION_UNSPECIFIED = 0;
+  PROTOCOL_VERSION_1 = 1;
+}
+
+enum TensorDType {
+  TENSOR_DTYPE_UNSPECIFIED = 0;
+  TENSOR_DTYPE_FLOAT32 = 1;  // IEEE-754 binary32, little-endian
+  TENSOR_DTYPE_INT64 = 2;    // two's complement, little-endian (token ids)
+}
+
+enum ActivationKind {
+  ACTIVATION_KIND_UNSPECIFIED = 0;
+  ACTIVATION_KIND_TOKEN_IDS = 1;      // [batch, tokens] int64, input of stage 0
+  ACTIVATION_KIND_HIDDEN_STATES = 2;  // [batch, tokens, hidden] between stages
+  ACTIVATION_KIND_LOGITS = 3;         // [batch, tokens, vocab] from the LM-head stage
+}
+
+// One tensor. Encoding "raw-le-c-v1": the elements in C (row-major)
+// order, each in little-endian byte order, no header, no padding, no
+// compression. len(data) must equal product(shape) * itemsize(dtype).
+// Mirrors partitioner.execution.interface.ActivationMeta.
+message TensorPayload {
+  string encoding = 1;
+  TensorDType dtype = 2;
+  repeated int64 shape = 3;
+  bytes data = 4;
+  ActivationKind kind = 5;
+  int32 produced_by_stage = 6;  // -1 = the request's own input
+  int64 positions_start = 7;    // 0 in Phase 6 (single prefill pass)
+}
+
+message ExecuteStageRequest {
+  ProtocolVersion protocol_version = 1;
+  string request_id = 2;
+  // inputs_fingerprint of the plan. The worker recomputes it from
+  // plan_json and refuses a mismatch.
+  string plan_id = 3;
+  // The full Phase 4 plan (UTF-8 JSON). The worker validates it and
+  // checks that stage_index is assigned to itself.
+  bytes plan_json = 4;
+  string model_id = 5;
+  string config_fingerprint = 6;
+  // The worker this request is meant for; must equal the receiving
+  // worker's configured worker_id.
+  string target_worker_id = 7;
+  int32 stage_index = 8;
+  int32 unit_start = 9;  // [unit_start, unit_end) as in the plan
+  int32 unit_end = 10;
+  TensorPayload input = 11;
+  string coordinator = 12;  // informational only (hostname/pid)
+}
+
+enum StageStatus {
+  STAGE_STATUS_UNSPECIFIED = 0;
+  STAGE_STATUS_OK = 1;
+  // Not executed: the request is invalid (version, fields, plan,
+  // assignment, tensor, limits, deadline). Retrying unchanged fails again.
+  STAGE_STATUS_REJECTED = 2;
+  // Not executed: the worker is at its concurrency limit. Safe to retry.
+  STAGE_STATUS_BUSY = 3;
+  // Execution started and failed.
+  STAGE_STATUS_FAILED = 4;
+  // Execution finished after the request's deadline; output discarded.
+  STAGE_STATUS_DEADLINE_EXCEEDED = 5;
+}
+
+message StageError {
+  // Machine-readable, e.g. PROTOCOL_VERSION, MALFORMED_REQUEST,
+  // WRONG_WORKER, PLAN_INVALID, UNASSIGNED_STAGE, INVALID_TENSOR,
+  // LIMIT_EXCEEDED, DEADLINE, BUSY, EXECUTION_ERROR.
+  string code = 1;
+  string message = 2;
+  repeated string problems = 3;
+  // True if stage computation had started. Coordinators must not
+  // treat an executed=true failure as safe to retry.
+  bool executed = 4;
+}
+
+message StageTiming {
+  double validate_seconds = 1;  // plan + request + tensor checks
+  double compute_seconds = 2;   // the stage's forward pass
+  double total_seconds = 3;     // handler wall clock
+}
+
+message ExecuteStageResponse {
+  ProtocolVersion protocol_version = 1;
+  string request_id = 2;
+  string worker_id = 3;
+  int32 stage_index = 4;
+  StageStatus status = 5;
+  TensorPayload output = 6;  // set only when status == OK
+  StageTiming timing = 7;
+  StageError error = 8;      // set unless status == OK
+  // Self-reported, unauthenticated: where the stage ran.
+  string worker_hostname = 9;
+  int32 worker_pid = 10;
+}

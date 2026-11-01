@@ -9,6 +9,10 @@ command. It is deliberately small:
   sequences, with no KV cache and no autoregressive generation;
 - fp32 only.
 
+> **Phase 6 update:** stages can now run on separate worker processes
+> over gRPC (`execute --remote`). See [REMOTE_EXECUTION.md](REMOTE_EXECUTION.md).
+> The local modes below are unchanged.
+
 Code: `model-partitioner/partitioner/execution/`. Tests:
 `model-partitioner/tests/test_execution_*.py`.
 
@@ -17,8 +21,8 @@ Code: `model-partitioner/partitioner/execution/`. Tests:
 | Status | What |
 |---|---|
 | **Implemented and tested locally** | Plan loading and validation for execution; the tiny model (explicit PyTorch math, deterministic weights); per-stage execution with shape/dtype/finite checks at every boundary; an unpartitioned reference path with an automatic comparison; single-worker real execution; labelled local emulation of multi-stage plans; resource limits checked before allocation; structured results and errors; `python -m partitioner execute`. |
-| **Interfaces prepared for future transport** | `StageSpec`, `Activation` / `ActivationMeta`, `StageExecutor`, `ActivationTransport` (`STAGE_INTERFACE_VERSION = 1`). The only transport is `InProcessTransport`, which hands the same tensor object to the next stage. |
-| **Not implemented** | Remote tensor transport (no gRPC activation messages, no tensor serialization); physical multi-machine inference; GPT-2 (or any real model) execution; quantized inference; KV cache and token-by-token generation; padding and attention masks. |
+| **Interfaces prepared for future transport** | `StageSpec`, `Activation` / `ActivationMeta`, `StageExecutor`, `ActivationTransport` (`STAGE_INTERFACE_VERSION = 1`). Local modes use only `InProcessTransport`, which hands the same tensor object to the next stage. Phase 6 carries the same metadata over gRPC (REMOTE_EXECUTION.md). |
+| **Not implemented** | Physical multi-machine inference (Phase 6 remote execution is tested on one computer only); GPT-2 (or any real model) execution; quantized inference; KV cache and token-by-token generation; padding and attention masks. *(Phase 5 also lacked remote tensor transport; Phase 6 added it.)* |
 
 ## The supported model: `builtin:tiny-gpt2-v1`
 
@@ -62,7 +66,7 @@ partitioned-vs-reference comparison unless you pass
 | Multi-stage plans | refused (no transport between workers) | run sequentially, in-process handoffs |
 | Result | `execution_mode: local-single-worker`, `assignment_honored: true` | `execution_mode: local-emulation`, `assignment_honored: false`, warning "LOCAL EMULATION … NOT honored … not distributed" |
 
-`distributed` is `false` in every Phase 5 result.
+`distributed` is `false` in every local-mode result. Remote mode (Phase 6) is described in REMOTE_EXECUTION.md.
 
 ## What makes a plan loadable
 
@@ -211,12 +215,12 @@ ActivationTransport.send(Activation, to_stage) -> Activation
 - One model, untrained formula weights, fp32, CPU, a single prefill
   pass, equal-length sequences, no attention mask, no KV cache, no
   generation loop.
-- Execution lives in `model-partitioner/` as a library and CLI. The
-  worker process (`worker/worker/execution`, `worker/worker/inference`)
-  is unchanged, and Phase 3 registration and heartbeats are untouched.
-  Hosting stages inside the worker process is later work.
+- Local execution lives in `model-partitioner/` as a library and CLI.
+  (Phase 6: the worker process can now host stages through its
+  StageExecution service, `worker/worker/execution`; registration and
+  heartbeats are still untouched.)
 - Stage timings are wall-clock figures from one run. They are not
   benchmarks and are not fed back into the planner.
-- Multi-stage execution exists only as labelled single-process
+- (Phase 5) Multi-stage execution exists only as labelled single-process
   emulation. It shows that stage boundaries preserve the computation,
   and nothing about network cost or multi-machine behaviour.
