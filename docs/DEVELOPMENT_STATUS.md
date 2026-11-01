@@ -1,6 +1,6 @@
 # Development Status
 
-Last updated: 2026-11-01 (Phase 7 -- LAN deployment readiness; physical test PENDING)
+Last updated: 2026-11-01 (Phase 8 -- two-machine LAN test readiness; physical test PENDING)
 
 ## Completed phases
 
@@ -736,11 +736,81 @@ results table in DEPLOYMENT_LAN.md); the optional LAN-IP bind step
 (could raise a firewall prompt, and its traffic stays on the machine);
 TLS and authentication (future work, described, not implemented).
 
+### Phase 8 — Two-machine LAN test readiness, 2026-11-01
+
+Guide: [DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md). Report:
+[validation/PHASE8_REPORT.md](validation/PHASE8_REPORT.md). **No second
+computer took part, so the physical test is still `PENDING`, and nothing
+is `REAL_MULTI_MACHINE`.**
+
+**Implemented and tested:**
+- **Orchestrator (Go).** It records each registration's TCP peer IP as
+  `observed_peer_ip`, uses it in duplicate-id detection, and exposes it
+  in `GET /api/workers`.
+
+  This fixes a real hazard. With Health on loopback, two machines both
+  report `127.0.0.1:50100`, so a duplicated `worker_id` would have
+  silently replaced the other machine's registration.
+- **Preflight additions:**
+  - `--orchestrator-config` (bind policy mirroring Go, address
+    ownership, port, simulated workers);
+  - a local Windows Firewall check via `netsh` (0.4 s vs. 65 s for the
+    cmdlets): missing rule, Block override, broad rule, Public-profile
+    program rules; SKIP when the output can't be parsed;
+  - the port owner via psutil (FAIL when an unrelated program holds it);
+  - `--probe-orchestrator` from the worker machine;
+  - peer-IP notes in the plan check;
+  - `--peer-ip`, which fills in exact firewall commands in hints.
+- **`scripts/phase8_lan.py`:**
+  - config generators that refuse public, `0.0.0.0`, hostname, port
+    clashes and overwrites;
+  - `run`, the two-machine test: wait for readiness → preflight → plan
+    from live registrations only → preflight with
+    `--require-multi-host` → N executions against the reference →
+    evidence-based classification → guided disconnect/restart;
+  - `rehearse`, a loopback version that is always REAL_MULTI_PROCESS.
+
+  `REAL_MULTI_MACHINE` requires 2+ distinct reported hostnames **and** 2+
+  distinct non-loopback registration peer IPs.
+- **LAN guide rewritten:**
+  - finding the IPs, generating configs, least-privilege firewall rules;
+  - preflight with expected output, startup order with the log line to
+    wait for, the run, shutdown;
+  - a 22-row troubleshooting table and the checklist with its `PENDING`
+    results table.
+
+**Local results:**
+- loopback rehearsal: P1–P8 PASS, classification **REAL_MULTI_PROCESS**;
+- strict rehearsal: correctly FAILS the multi-machine criterion;
+- Phase 7 validation re-run: 14/14.
+
+**Findings on Computer 1, not modified:**
+- Public-profile Allow rules exist for `python.exe` and
+  `orchestrator.exe` on any port;
+- port 8080 is held by an unrelated `java.exe`;
+- Windows excludes TCP ports 50000–50059;
+- live planning is infeasible under the default margins.
+
 ## In progress
 
-None. Phase 7 is complete, apart from the physical test, which is
-`PENDING` until Computer 2 is available. Waiting for approval. Nothing
-was committed and nothing was installed.
+None. Phase 8 is complete apart from the physical two-computer test,
+which is `PENDING` until Computer 2 is available (manual steps:
+PHASE8_REPORT.md). Nothing was committed or pushed, and nothing was
+installed.
+
+## Test results (actual output, Phase 8, 2026-11-01)
+
+No physical multi-machine test was run.
+
+| Suite | Command | Result | REAL_SINGLE_MACHINE | REAL_MULTI_PROCESS | REAL_MULTI_MACHINE | SIMULATED |
+|---|---|---|---|---|---|---|
+| Partitioner | `cd model-partitioner; python -m pytest -q` | **383 passed**, 0 failed | 233 | 14 | 0 | 136 |
+| Worker | `cd worker; python -m pytest -q` | **150 passed**, 0 failed | 57 | 3 | 0 | 90 |
+| Go | `cd orchestrator; gofmt -l .; go vet ./...; go test ./... -v -count=1` | clean, **111 `--- PASS`, 0 `--- FAIL`** | in-process | | 0 | |
+| Phase 1 smoke | `scripts/smoke_test_phase1.ps1` | **PASS** | | yes | | |
+| Phase 7 validation (regression) | `python scripts/phase7_local_validation.py --out <scratch>` | **14/14** | | yes | | |
+| Phase 8 rehearsal | `python scripts/phase8_lan.py rehearse --out docs/validation/phase8-loopback-rehearsal-2026-11-01 --repeat 3` | **PASS** | | yes | 0 | |
+| Phase 8 strict rehearsal | `… rehearse --strict --no-disruption --repeat 1 --out docs/validation/phase8-loopback-strict-2026-11-01` | **FAIL by design** (criterion not met) | | yes | 0 | |
 
 ## Test results (actual output, Phase 7, 2026-11-01)
 
@@ -1109,6 +1179,16 @@ via `go test`/`pytest` unit coverage of the deregister path).
 
 ## Known issues / blockers
 
+- (Phase 8) **The physical two-computer test is still PENDING.** All
+  tooling is ready (DEPLOYMENT_LAN.md, Steps 1–8).
+- (Phase 8) Heartbeats are still matched by worker id only. The
+  observed peer IP is checked at registration, not on every heartbeat.
+- (Phase 8) The firewall check parses English `netsh` output; on other
+  languages it reports SKIP. It is a prediction, and the real test is a
+  connection from the peer.
+- (Phase 8) On Computer 1, port 8080 is held by an unrelated Java
+  process, so use another `--rest-port` while it runs.
+
 - (Phase 7) **The physical two-computer test is PENDING.** Computer 2 is
   unavailable. Procedure: DEPLOYMENT_LAN.md.
 - (Phase 7) Live planning on Computer 1 is infeasible under the default
@@ -1185,6 +1265,11 @@ via `go test`/`pytest` unit coverage of the deregister path).
   during testing, which affected the timing figures above.
 
 ## Next implementation steps
+
+- (After Phase 8) Run the first real two-computer test:
+  `scripts/phase8_lan.py run … --interactive` (DEPLOYMENT_LAN.md, Step
+  7). It must report `REAL_MULTI_MACHINE`; then fill in the results
+  table.
 
 - (After Phase 7, on approval) When Computer 2 is available, follow the
   DEPLOYMENT_LAN.md checklist and fill in its results table: first the

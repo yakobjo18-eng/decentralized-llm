@@ -136,6 +136,7 @@ MODULES = {
     "test_remote_execution": "REAL_SINGLE_MACHINE",  # Part A; Part B overridden below
     "test_remote_worker_main": "REAL_MULTI_PROCESS",
     "test_preflight": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan": "SIMULATED",           # canned firewall output / synthetic results; real ones overridden
 }
 OVERRIDES = {
     "test_workers::test_parity_with_live_orchestrator": "REAL_MULTI_PROCESS",
@@ -147,6 +148,23 @@ OVERRIDES = {
     "test_remote_execution::test_killed_worker_process_fails_its_stage_cleanly": "REAL_MULTI_PROCESS",
     "test_preflight::test_orchestrator_checks_against_a_stand_in_server": "SIMULATED",
     "test_preflight::test_preflight_against_a_live_orchestrator_and_worker_processes": "REAL_MULTI_PROCESS",
+    "test_preflight::test_port_held_by_an_unrelated_program_fails": "SIMULATED",
+    "test_preflight::test_orchestrator_port_held_by_orchestrator_is_info": "SIMULATED",
+    "test_phase8_lan::test_live_netsh_is_readable_here": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_orchestrator_config_checks": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_orchestrator_env_override_wins_like_the_go_loader": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_missing_orchestrator_config": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_go_orchestrator_agrees_with_the_python_check": "REAL_MULTI_PROCESS",
+    "test_phase8_lan::test_probe_orchestrator_reports_startup_order": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_probe_is_opt_in": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_worker_config_generator_round_trips": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_worker_config_generator_refuses_unsafe_values": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_orchestrator_config_generator": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_generated_orchestrator_config_starts_the_real_orchestrator": "REAL_MULTI_PROCESS",
+    "test_phase8_lan::test_run_needs_two_endpoints": "REAL_SINGLE_MACHINE",
+    "test_phase8_lan::test_rehearsal_end_to_end": "REAL_MULTI_PROCESS",
+    "test_phase8_lan::test_strict_rehearsal_fails_the_multi_machine_criterion": "REAL_MULTI_PROCESS",
+    "test_phase8_lan::test_rehearsal_report_contains_no_lan_addresses": "REAL_MULTI_PROCESS",
 }
 
 

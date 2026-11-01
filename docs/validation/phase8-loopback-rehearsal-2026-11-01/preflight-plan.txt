@@ -1,0 +1,65 @@
+
+== this machine ==
+[INFO] hostname: YakobsPC
+       tested: socket.gethostname()
+[INFO] IPv4 <redacted>: private (Wi-Fi)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 <redacted>: link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 <redacted>: link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 127.0.0.1: loopback (Loopback Pseudo-Interface 1)
+       tested: psutil.net_if_addrs()
+[PASS] public interface: no public IPv4 address on any interface
+       tested: interface classification
+
+== orchestrator http://127.0.0.1:56775 ==
+[PASS] REST reachable: TCP connect to 127.0.0.1:56775 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56775
+[PASS] health: {"status": "ok", "uptime_seconds": 22.1238179, "registered_workers": 2, "online_workers": 2, "online_real_workers": 2, "online_simulated_workers": 0, "online_unknown_source_workers": 0}
+       tested: GET /health
+[INFO] registered workers: rehearsal-a (online, REAL, host YakobsPC, reported addr 127.0.0.1:56786, connected from 127.0.0.1), rehearsal-b (online, REAL, host YakobsPC, reported addr 127.0.0.1:56788, connected from 127.0.0.1)
+       tested: GET /api/workers
+[PASS] worker rehearsal-b: online, REAL, host YakobsPC, heartbeat 0.5s ago
+       tested: GET /api/workers
+[PASS] worker rehearsal-a: online, REAL, host YakobsPC, heartbeat 0.0s ago
+       tested: GET /api/workers
+
+== endpoint rehearsal-a=127.0.0.1:56785 ==
+[PASS] TCP reachable: TCP connect to 127.0.0.1:56785 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56785 (14 ms)
+[PASS] protocol: worker speaks [1], coordinator speaks 1
+       tested: gRPC GetInfo
+[PASS] identity: answers as 'rehearsal-a' on host 'YakobsPC' (pid 21336); self-reported, unauthenticated
+       tested: GetInfo worker_id
+[INFO] worker limits: models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False
+       tested: GetInfo
+
+== endpoint rehearsal-b=127.0.0.1:56787 ==
+[PASS] TCP reachable: TCP connect to 127.0.0.1:56787 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56787 (0 ms)
+[PASS] protocol: worker speaks [1], coordinator speaks 1
+       tested: gRPC GetInfo
+[PASS] identity: answers as 'rehearsal-b' on host 'YakobsPC' (pid 15292); self-reported, unauthenticated
+       tested: GetInfo worker_id
+[INFO] worker limits: models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False
+       tested: GetInfo
+
+== plan C:\Users\Yakob\OneDrive\Documents\Programs\decentralized llm\docs\validation\phase8-loopback-rehearsal-2026-11-01\plan.json ==
+[PASS] validity: plan d3f05553cd290dc5... for builtin:tiny-gpt2-v1, 2 stage(s); fingerprint, model, precision, ranges and memory recomputation all pass
+       tested: Phase 5 loader, remote mode
+[WARN] capacity vs. live orchestrator: stage 0: stated host capacity 1449551462 exceeds the worker's usable RAM 0; stage 1: stated host capacity 1449551462 exceeds the worker's usable RAM 0
+       tested: validate_plan with live orchestrator records
+       hint: Worker resources changed since planning; re-plan from the live orchestrator.
+[PASS] stage 0 -> rehearsal-b: units [0, 3], host 'YakobsPC', endpoint 127.0.0.1:56787, registered from 127.0.0.1: assignment consistent
+       tested: plan vs. GetInfo vs. orchestrator
+[PASS] stage 1 -> rehearsal-a: units [3, 7], host 'YakobsPC', endpoint 127.0.0.1:56785, registered from 127.0.0.1: assignment consistent
+       tested: plan vs. GetInfo vs. orchestrator
+[INFO] hosts spanned: 1 host(s): ['YakobsPC']
+       tested: plan stage hostnames
+[PASS] limits stage 0: batch 2 x 32 tokens: input 512 B, output 8192 B, request ~13881 B -- within limits
+       tested: planned workload vs. coordinator defaults and worker GetInfo limits
+[PASS] limits stage 1: batch 2 x 32 tokens: input 8192 B, output 32768 B, request ~21561 B -- within limits
+       tested: planned workload vs. coordinator defaults and worker GetInfo limits
+
+SUMMARY: 16 PASS, 1 WARN, 0 FAIL, 0 SKIP, 9 INFO -- no failures

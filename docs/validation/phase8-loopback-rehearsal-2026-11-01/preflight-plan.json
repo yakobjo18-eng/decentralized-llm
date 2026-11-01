@@ -1,0 +1,248 @@
+{
+ "preflight_schema_version": 1,
+ "hostname": "YakobsPC",
+ "counts": {
+  "PASS": 16,
+  "WARN": 1,
+  "FAIL": 0,
+  "SKIP": 0,
+  "INFO": 9
+ },
+ "ok": true,
+ "checks": [
+  {
+   "section": "this machine",
+   "name": "hostname",
+   "status": "INFO",
+   "detail": "YakobsPC",
+   "hint": "",
+   "tested": "socket.gethostname()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "private (Wi-Fi)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 127.0.0.1",
+   "status": "INFO",
+   "detail": "loopback (Loopback Pseudo-Interface 1)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "public interface",
+   "status": "PASS",
+   "detail": "no public IPv4 address on any interface",
+   "hint": "",
+   "tested": "interface classification",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56775",
+   "name": "REST reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56775 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56775",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56775",
+   "name": "health",
+   "status": "PASS",
+   "detail": "{\"status\": \"ok\", \"uptime_seconds\": 22.1238179, \"registered_workers\": 2, \"online_workers\": 2, \"online_real_workers\": 2, \"online_simulated_workers\": 0, \"online_unknown_source_workers\": 0}",
+   "hint": "",
+   "tested": "GET /health",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56775",
+   "name": "registered workers",
+   "status": "INFO",
+   "detail": "rehearsal-a (online, REAL, host YakobsPC, reported addr 127.0.0.1:56786, connected from 127.0.0.1), rehearsal-b (online, REAL, host YakobsPC, reported addr 127.0.0.1:56788, connected from 127.0.0.1)",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56775",
+   "name": "worker rehearsal-b",
+   "status": "PASS",
+   "detail": "online, REAL, host YakobsPC, heartbeat 0.5s ago",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56775",
+   "name": "worker rehearsal-a",
+   "status": "PASS",
+   "detail": "online, REAL, host YakobsPC, heartbeat 0.0s ago",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56785",
+   "name": "TCP reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56785 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56785 (14 ms)",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56785",
+   "name": "protocol",
+   "status": "PASS",
+   "detail": "worker speaks [1], coordinator speaks 1",
+   "hint": "",
+   "tested": "gRPC GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56785",
+   "name": "identity",
+   "status": "PASS",
+   "detail": "answers as 'rehearsal-a' on host 'YakobsPC' (pid 21336); self-reported, unauthenticated",
+   "hint": "",
+   "tested": "GetInfo worker_id",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56785",
+   "name": "worker limits",
+   "status": "INFO",
+   "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+   "hint": "",
+   "tested": "GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56787",
+   "name": "TCP reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56787 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56787 (0 ms)",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56787",
+   "name": "protocol",
+   "status": "PASS",
+   "detail": "worker speaks [1], coordinator speaks 1",
+   "hint": "",
+   "tested": "gRPC GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56787",
+   "name": "identity",
+   "status": "PASS",
+   "detail": "answers as 'rehearsal-b' on host 'YakobsPC' (pid 15292); self-reported, unauthenticated",
+   "hint": "",
+   "tested": "GetInfo worker_id",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56787",
+   "name": "worker limits",
+   "status": "INFO",
+   "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+   "hint": "",
+   "tested": "GetInfo",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "validity",
+   "status": "PASS",
+   "detail": "plan d3f05553cd290dc5... for builtin:tiny-gpt2-v1, 2 stage(s); fingerprint, model, precision, ranges and memory recomputation all pass",
+   "hint": "",
+   "tested": "Phase 5 loader, remote mode",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "capacity vs. live orchestrator",
+   "status": "WARN",
+   "detail": "stage 0: stated host capacity 1449551462 exceeds the worker's usable RAM 0; stage 1: stated host capacity 1449551462 exceeds the worker's usable RAM 0",
+   "hint": "Worker resources changed since planning; re-plan from the live orchestrator.",
+   "tested": "validate_plan with live orchestrator records",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "stage 0 -> rehearsal-b",
+   "status": "PASS",
+   "detail": "units [0, 3], host 'YakobsPC', endpoint 127.0.0.1:56787, registered from 127.0.0.1: assignment consistent",
+   "hint": "",
+   "tested": "plan vs. GetInfo vs. orchestrator",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "stage 1 -> rehearsal-a",
+   "status": "PASS",
+   "detail": "units [3, 7], host 'YakobsPC', endpoint 127.0.0.1:56785, registered from 127.0.0.1: assignment consistent",
+   "hint": "",
+   "tested": "plan vs. GetInfo vs. orchestrator",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "hosts spanned",
+   "status": "INFO",
+   "detail": "1 host(s): ['YakobsPC']",
+   "hint": "",
+   "tested": "plan stage hostnames",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "limits stage 0",
+   "status": "PASS",
+   "detail": "batch 2 x 32 tokens: input 512 B, output 8192 B, request ~13881 B -- within limits",
+   "hint": "",
+   "tested": "planned workload vs. coordinator defaults and worker GetInfo limits",
+   "data": {}
+  },
+  {
+   "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase8-loopback-rehearsal-2026-11-01\\plan.json",
+   "name": "limits stage 1",
+   "status": "PASS",
+   "detail": "batch 2 x 32 tokens: input 8192 B, output 32768 B, request ~21561 B -- within limits",
+   "hint": "",
+   "tested": "planned workload vs. coordinator defaults and worker GetInfo limits",
+   "data": {}
+  }
+ ]
+}

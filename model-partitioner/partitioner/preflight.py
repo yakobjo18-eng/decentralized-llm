@@ -258,6 +258,45 @@ def check_local_network(r: Report) -> None:
         r.add(sec, "public interface", PASS, "no public IPv4 address on any interface", tested="interface classification")
 
 
+def port_owner(port: int) -> Optional[Tuple[int, str]]:
+    """(pid, process name) of whatever LISTENs on this TCP port, if visible."""
+    try:
+        import psutil
+
+        for c in psutil.net_connections(kind="tcp"):
+            if c.status == psutil.CONN_LISTEN and c.laddr and c.laddr.port == port and c.pid:
+                try:
+                    return c.pid, psutil.Process(c.pid).name()
+                except psutil.Error:
+                    return c.pid, "?"
+    except Exception:
+        return None
+    return None
+
+
+def check_port_free(r: Report, sec: str, setting: str, host: str, port: int, ours: Sequence[str]) -> None:
+    """Port free? If not: who holds it -- one of our own programs (it may
+    simply be running already) or something unrelated (a real conflict)."""
+    free, err = _can_bind(host, port)
+    if free:
+        r.add(sec, f"{setting} port {port}", PASS, "free", tested=f"bind({host}, {port})")
+        return
+    owner = port_owner(port)
+    tested = f"bind({host}, {port}) + listening-socket owner (psutil)"
+    if owner is None:
+        r.add(sec, f"{setting} port {port}", WARN, f"in use ({err}); owner not visible",
+              "Something already holds this port (maybe our own service). Check: netstat -ano | findstr :" + str(port)
+              + "; reserved ranges: netsh int ipv4 show excludedportrange protocol=tcp", tested=tested)
+    elif owner[1].lower() in {o.lower() for o in ours}:
+        r.add(sec, f"{setting} port {port}", INFO if owner[1].lower() != "python.exe" else WARN,
+              f"held by {owner[1]} (pid {owner[0]}): probably this service already running",
+              "If it is not, stop pid " + str(owner[0]) + " or pick another port.", tested=tested)
+    else:
+        r.add(sec, f"{setting} port {port}", FAIL, f"held by an unrelated program: {owner[1]} (pid {owner[0]})",
+              "Pick another port for this setting (and use it consistently in configs, firewall rules and --endpoint), "
+              "or stop that program if you own it.", tested=tested)
+
+
 def _can_bind(host: str, port: int) -> Tuple[bool, str]:
     family = socket.AF_INET6 if ":" in host else socket.AF_INET
     with socket.socket(family, socket.SOCK_STREAM) as s:
@@ -268,7 +307,218 @@ def _can_bind(host: str, port: int) -> Tuple[bool, str]:
             return False, str(exc)
 
 
-def check_worker_config(r: Report, path: str) -> Optional[object]:
+# ---------------------------------------------------------------------
+# Local Windows Firewall (Phase 8)
+# ---------------------------------------------------------------------
+#
+# Read-only and heuristic: it reads `netsh advfirewall` output (0.4 s on
+# Computer 1; the PowerShell cmdlets took 65 s) and predicts whether an
+# inbound connection to a LAN-bound port would be admitted. The
+# definitive test is a TCP connect FROM THE PEER machine (preflight
+# --endpoint / --probe-orchestrator run there). netsh output is
+# localized: on a non-English Windows the parser finds no rules and the
+# check is SKIPPED, never guessed.
+
+ORCHESTRATOR_EXE = REPO / "orchestrator" / "orchestrator.exe"
+
+
+def parse_netsh_rules(text: str) -> List[dict]:
+    rules: List[dict] = []
+    cur: Optional[dict] = None
+    for line in text.splitlines():
+        if line.startswith("Rule Name:"):
+            cur = {"name": line.split(":", 1)[1].strip()}
+            rules.append(cur)
+        elif cur is not None and ":" in line and not line.startswith("-"):
+            key, value = line.split(":", 1)
+            cur[key.strip().lower()] = value.strip()
+    return rules
+
+
+def parse_netsh_profiles(text: str) -> Dict[str, bool]:
+    """Active profile name -> firewall on?"""
+    out, current = {}, None
+    for line in text.splitlines():
+        if line.strip().endswith("Profile Settings:"):
+            current = line.split()[0]
+            out[current] = True
+        elif current and line.startswith("State"):
+            out[current] = line.split()[-1].upper() == "ON"
+    return out
+
+
+def _port_matches(spec: str, port: int) -> bool:
+    for part in spec.replace(" ", "").split(","):
+        if part.lower() == "any":
+            return True
+        if "-" in part:
+            lo, _, hi = part.partition("-")
+            if lo.isdigit() and hi.isdigit() and int(lo) <= port <= int(hi):
+                return True
+        elif part.isdigit() and int(part) == port:
+            return True
+    return False
+
+
+def _norm(path: str) -> str:
+    return str(Path(path)).lower() if path else ""
+
+
+def matching_rules(rules: Sequence[dict], profiles: Sequence[str], ip: str, port: int, programs: Sequence[str]) -> List[dict]:
+    progs = {_norm(p) for p in programs}
+    out = []
+    for rule in rules:
+        if rule.get("enabled", "").lower() != "yes" or rule.get("direction", "").lower() != "in":
+            continue
+        if rule.get("protocol", "").upper() not in ("TCP", "ANY"):
+            continue
+        rprof = rule.get("profiles", "")
+        if rprof.lower() != "any" and not any(p.lower() in rprof.lower() for p in profiles):
+            continue
+        if not _port_matches(rule.get("localport", ""), port):
+            continue
+        local_ip = rule.get("localip", "Any")
+        if local_ip.lower() != "any" and ip not in local_ip:
+            continue
+        program = rule.get("program", "Any")
+        if program.lower() != "any" and _norm(program) not in progs:
+            continue
+        out.append(rule)
+    return out
+
+
+def _netsh(*args: str) -> Optional[str]:
+    import subprocess
+
+    try:
+        return subprocess.run(["netsh", "advfirewall", *args], capture_output=True, text=True, timeout=20,
+                              errors="replace").stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def check_local_firewall(r: Report, sec: str, setting: str, ip: str, port: int, programs: Sequence[str],
+                         peer_hint: str, rules_text: Optional[str] = None, profile_text: Optional[str] = None) -> None:
+    """Can a peer on the LAN reach ip:port on THIS machine? (heuristic)"""
+    name = f"{setting} firewall"
+    if rules_text is None:
+        if sys.platform != "win32":
+            r.add(sec, name, SKIP, "not tested: only Windows Firewall is inspected")
+            return
+        rules_text = _netsh("firewall", "show", "rule", "name=all", "dir=in", "verbose")
+        profile_text = _netsh("show", "currentprofile")
+    rules = parse_netsh_rules(rules_text or "")
+    profiles = parse_netsh_profiles(profile_text or "")
+    if not rules or not profiles:
+        r.add(sec, name, SKIP, "not tested: could not read or parse `netsh advfirewall` output (non-English Windows?)",
+              "Check the rules by hand: DEPLOYMENT_LAN.md, Step 3.")
+        return
+    tested = f"netsh advfirewall (read-only), active profile(s) {sorted(profiles)}; a TCP connect from the peer is the real test"
+    off = [p for p, on in profiles.items() if not on]
+    if off:
+        r.add(sec, name, WARN, f"Windows Firewall is OFF for the active profile(s) {off}: {ip}:{port} is open to the whole "
+              "network", "Turn the firewall back on and add the least-privilege rule from DEPLOYMENT_LAN.md.", tested=tested)
+        return
+    found = matching_rules(rules, list(profiles), ip, port, programs)
+    blocks = [x for x in found if x.get("action", "").lower() == "block"]
+    allows = [x for x in found if x.get("action", "").lower() == "allow"]
+    rule_cmd = (f'New-NetFirewallRule -DisplayName "dllm {setting} {port}" -Direction Inbound -Protocol TCP -LocalPort {port} '
+                f"-RemoteAddress {peer_hint} -Action Allow -Profile Private")
+    if blocks:
+        r.add(sec, name, FAIL, f"enabled inbound BLOCK rule(s) {sorted({b['name'] for b in blocks})} match TCP {port}; "
+              "block rules win over allow rules", "Remove or disable that rule (often created by clicking 'Cancel' on a "
+              "Windows Firewall prompt): Get-NetFirewallRule -DisplayName '<name>' | Remove-NetFirewallRule", tested=tested)
+    elif not allows:
+        r.add(sec, name, FAIL, f"no enabled inbound Allow rule matches TCP {port} on the {sorted(profiles)} profile: "
+              "connections from the peer will be dropped (they show up there as a timeout)",
+              f"In an elevated PowerShell: {rule_cmd}", tested=tested)
+    else:
+        broad = [a["name"] for a in allows if a.get("remoteip", "Any").lower() == "any"]
+        detail = "; ".join(f"{a['name']!r} (remote {a.get('remoteip')}, port {a.get('localport')}, program "
+                           f"{a.get('program')})" for a in allows)
+        if broad:
+            r.add(sec, name, WARN, f"allowed by {detail}, but {sorted(set(broad))} admit ANY remote address",
+                  f"Least privilege: restrict to the peer, e.g. {rule_cmd}, and remove the broad rule.", tested=tested)
+        else:
+            r.add(sec, name, PASS, f"allowed only from specific remote addresses: {detail}", tested=tested)
+    public = [x for x in rules if x.get("enabled", "").lower() == "yes" and x.get("direction", "").lower() == "in"
+              and x.get("action", "").lower() == "allow" and "public" in x.get("profiles", "").lower()
+              and x.get("program", "Any").lower() != "any" and _norm(x["program"]) in {_norm(p) for p in programs}
+              and x.get("localport", "").lower() == "any"]
+    if public:
+        r.add(sec, f"{setting} public-profile rules", WARN,
+              f"{len(public)} enabled inbound Allow rule(s) {sorted({x['name'] for x in public})} admit this program on ANY "
+              "port on the Public profile", "On a public network these would expose any LAN-bound listener of this program. "
+              "Review: Get-NetFirewallRule -DisplayName '<name>' | Format-List Profile,Action", tested=tested)
+
+
+def check_orchestrator_config(r: Report, path: str, peer_hint: str = "<COMPUTER-2-IP>") -> None:
+    """Computer 1: the orchestrator's own config, read the way the Go
+    orchestrator reads it (file, then ORCHESTRATOR_* environment)."""
+    import os
+
+    import yaml
+
+    sec = f"orchestrator config {path}"
+    if not Path(path).exists():
+        r.add(sec, "file", FAIL, "file not found; the orchestrator would run on defaults (loopback only)",
+              "Create it: python scripts/phase8_lan.py orchestrator-config --lan-ip <COMPUTER-1-IP> --out ...", tested="filesystem")
+        return
+    try:
+        data = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
+        if not isinstance(data, dict):
+            raise ValueError("top level must be a mapping")
+    except Exception as exc:
+        r.add(sec, "parse", FAIL, f"{type(exc).__name__}: {exc}", "Fix the YAML.", tested="yaml.safe_load")
+        return
+    r.add(sec, "parse", PASS, "parsed; ORCHESTRATOR_REST_ADDRESS / ORCHESTRATOR_GRPC_ADDRESS environment overrides applied "
+          "as the orchestrator would", tested="yaml.safe_load")
+    listeners = {
+        "grpc_address": os.environ.get("ORCHESTRATOR_GRPC_ADDRESS") or str(data.get("grpc_address", "127.0.0.1:9090")),
+        "rest_address": os.environ.get("ORCHESTRATOR_REST_ADDRESS") or str(data.get("rest_address", "127.0.0.1:8080")),
+    }
+    for setting, addr in listeners.items():
+        host, sep, port = addr.rpartition(":")
+        host = host.strip("[]") or "0.0.0.0"
+        if not sep or not port.isdigit():
+            r.add(sec, setting, FAIL, f"{addr!r} is not HOST:PORT", tested="config value")
+            continue
+        port_n, kind = int(port), _classify(host)
+        if kind in ("public", "hostname"):
+            r.add(sec, setting, FAIL, f"{addr}: {kind} -- the orchestrator refuses to start (config.CheckBindAddress)",
+                  "Use 127.0.0.1 or this machine's private LAN IP.", tested="bind policy (mirror of the Go check)")
+            continue
+        if kind == "all-interfaces":
+            r.add(sec, setting, WARN, f"{addr} listens on every interface", "Use the private LAN IP explicitly.",
+                  tested="bind policy")
+        elif kind == "loopback":
+            what = ("workers on OTHER machines cannot register" if setting == "grpc_address"
+                    else "fine: the coordinator and preflight run on this machine")
+            r.add(sec, setting, INFO if setting == "rest_address" else WARN, f"{addr} is loopback: {what}",
+                  "" if setting == "rest_address" else "For a LAN test set grpc_address to this machine's private LAN IP.",
+                  tested="bind policy")
+        else:
+            r.add(sec, setting, PASS if setting == "grpc_address" else WARN, f"{addr} ({kind})",
+                  "" if setting == "grpc_address" else "Least privilege: the REST API is only needed on this machine; "
+                  "keep rest_address on 127.0.0.1 unless another machine must read it.", tested="bind policy")
+        if kind in ("loopback", "private") and host != "localhost":
+            ok, err = _can_bind(host, 0)
+            if not ok:
+                r.add(sec, f"{setting} ownership", FAIL, f"this machine has no interface with address {host}: {err}",
+                      "Run ipconfig and use the current IPv4 address (DHCP may have changed it).", tested=f"bind({host}, 0)")
+                continue
+            check_port_free(r, sec, setting, host, port_n, ["orchestrator.exe", "orchestrator"])
+        if kind in ("private", "all-interfaces") and setting == "grpc_address":
+            check_local_firewall(r, sec, setting, host, port_n, [str(ORCHESTRATOR_EXE)], peer_hint)
+    if data.get("allow_simulated_workers"):
+        r.add(sec, "allow_simulated_workers", WARN, "true: SIMULATED profiles would be accepted",
+              "Set allow_simulated_workers: false for a real deployment.", tested="config value")
+    else:
+        r.add(sec, "allow_simulated_workers", PASS, "false", tested="config value")
+
+
+def check_worker_config(r: Report, path: str, probe_orchestrator: bool = False,
+                        peer_hint: str = "<COORDINATOR-IP>") -> Optional[object]:
     from partitioner.workers import _ensure_worker_importable
 
     _ensure_worker_importable()
@@ -321,11 +571,9 @@ def check_worker_config(r: Report, path: str) -> Optional[object]:
                       tested=f"bind({host}, 0)")
                 continue
             r.add(sec, f"{setting} ownership", PASS, f"{host} belongs to this machine", tested=f"bind({host}, 0)")
-            free, err = _can_bind(host, port)
-            r.add(sec, f"{setting} port {port}", PASS if free else WARN,
-                  "free" if free else f"in use ({err})",
-                  "" if free else "A worker may already be running here, or another program holds the port.",
-                  tested=f"bind({host}, {port})")
+            check_port_free(r, sec, setting, host, port, ["python.exe", "python"])
+        if kind in ("private", "all-interfaces") and setting == "execution_listen_host":
+            check_local_firewall(r, sec, setting, host, port, [sys.executable], peer_hint)
     if cfg.execution_enabled and cfg.listen_port == cfg.execution_listen_port:
         r.add(sec, "ports", FAIL, f"listen_port and execution_listen_port are both {cfg.listen_port}",
               "Use two different ports, e.g. 50100 (Health) and 50200 (StageExecution).", tested="config values")
@@ -350,6 +598,11 @@ def check_worker_config(r: Report, path: str) -> Optional[object]:
                   tested="config value")
         else:
             r.add(sec, "orchestrator_address", PASS, f"{cfg.orchestrator_address} ({okind})", tested="config value")
+        if probe_orchestrator:
+            probe = tcp_probe(ohost, oport, 3.0)
+            r.add(sec, "orchestrator_address reachable", PASS if probe.ok else FAIL, probe.detail,
+                  "" if probe.ok else hint_for(probe) + " Startup order: the orchestrator must already be running.",
+                  tested=f"DNS + TCP connect {ohost}:{oport} from this machine")
     except ValueError as exc:
         r.add(sec, "orchestrator_address", FAIL, str(exc), "Use HOST:PORT, e.g. 192.168.1.10:9090.", tested="config value")
     return cfg
@@ -385,7 +638,8 @@ def check_orchestrator(r: Report, url: str, expect: Sequence[str], timeout: floa
     by_id = {w.get("id"): w for w in workers}
     r.add(sec, "registered workers", INFO, ", ".join(
         f"{w['id']} ({'online' if w.get('online') else 'OFFLINE'}, {w.get('profile_source')}, host {w.get('hostname')}, "
-        f"addr {w.get('address')})" for w in workers) or "none", tested="GET /api/workers")
+        f"reported addr {w.get('address')}, connected from {w.get('observed_peer_ip') or 'unknown'})" for w in workers)
+          or "none", tested="GET /api/workers")
     for wid in expect:
         w = by_id.get(wid)
         if w is None:
@@ -561,8 +815,18 @@ def check_plan(r: Report, path: str, endpoints: Dict[str, str], infos: Dict[str,
                 if rec.get("hostname") != st.get("hostname"):
                     problems.append(f"orchestrator lists host {rec.get('hostname')!r}, plan says {st.get('hostname')!r}")
         status = FAIL if problems else (SKIP if info is None else PASS)
+        rec = (orch or {}).get(wid) or {}
+        peer = rec.get("observed_peer_ip")
+        try:
+            ehost = split_host_port(addr)[0]
+        except ValueError:
+            ehost = ""
+        if peer and ehost and _classify(peer) == "private" and _classify(ehost) == "private" and peer != ehost:
+            notes.append(f"note: registered from {peer} but endpoint is {ehost} (fine on a multi-homed machine; "
+                         "otherwise a wrong IP)")
         r.add(sec, name, status, "; ".join(problems + notes) or
-              f"units {st['unit_range']}, host {st.get('hostname')!r}, endpoint {addr}: assignment consistent",
+              f"units {st['unit_range']}, host {st.get('hostname')!r}, endpoint {addr}"
+              + (f", registered from {peer}" if peer else "") + ": assignment consistent",
               "The plan, the endpoints and the running workers must agree: re-plan from the live orchestrator and pass "
               "each worker's own execution address." if problems else "",
               tested="plan vs. GetInfo" + (" vs. orchestrator" if orch is not None else ""))
@@ -605,14 +869,17 @@ def check_plan(r: Report, path: str, endpoints: Dict[str, str], infos: Dict[str,
 
 def run(worker_configs: Sequence[str] = (), orchestrator: Optional[str] = None, expect: Sequence[str] = (),
         endpoints: Optional[Dict[str, str]] = None, plan: Optional[str] = None, require_multi_host: bool = False,
-        timeout: float = 3.0, skip_runtime: bool = False) -> Report:
+        timeout: float = 3.0, skip_runtime: bool = False, orchestrator_configs: Sequence[str] = (),
+        probe_orchestrator: bool = False, peer_ip: str = "") -> Report:
     r = Report()
     endpoints = dict(endpoints or {})
     if not skip_runtime:
         check_runtime(r)
     check_local_network(r)
+    for path in orchestrator_configs:
+        check_orchestrator_config(r, path, peer_ip or "<COMPUTER-2-IP>")
     for path in worker_configs:
-        check_worker_config(r, path)
+        check_worker_config(r, path, probe_orchestrator, peer_ip or "<COORDINATOR-IP>")
     orch = None
     if orchestrator:
         expected = list(expect)

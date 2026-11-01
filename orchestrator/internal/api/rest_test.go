@@ -89,3 +89,19 @@ func TestCORS_SetsConfiguredOrigin(t *testing.T) {
 		t.Errorf("Access-Control-Allow-Origin = %q, want http://localhost:3000", got)
 	}
 }
+
+func TestHandleWorkers_ExposesObservedPeerIP(t *testing.T) {
+	store := registry.NewInMemoryRegistry()
+	if _, err := store.Register(registry.WorkerRecord{ID: "w", Address: "127.0.0.1:50100", ObservedPeerIP: "192.168.1.21"}); err != nil {
+		t.Fatal(err)
+	}
+	rec := httptest.NewRecorder()
+	NewServer(store, "").Handler().ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/workers", nil))
+	var raw []map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &raw); err != nil || len(raw) != 1 {
+		t.Fatalf("bad body %q: %v", rec.Body.String(), err)
+	}
+	if raw[0]["observed_peer_ip"] != "192.168.1.21" || raw[0]["address"] != "127.0.0.1:50100" {
+		t.Errorf("want observed_peer_ip and the reported address side by side, got %v / %v", raw[0]["observed_peer_ip"], raw[0]["address"])
+	}
+}

@@ -263,6 +263,11 @@ slowed by imports.
 
 ## Private-LAN setup (not yet exercised on real separate machines)
 
+> **Phase 8:** the procedure now has config generators, firewall and
+> port-owner checks, and an automated test run
+> (`scripts/phase8_lan.py run`) that classifies by evidence. See
+> DEPLOYMENT_LAN.md.
+>
 > **Phase 7:** the complete, copy-pasteable two-computer procedure is in
 > [DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md). It covers firewall rules
 > limited to the peer IP, `preflight`, a physical test checklist, and a

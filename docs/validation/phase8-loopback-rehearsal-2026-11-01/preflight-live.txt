@@ -1,0 +1,81 @@
+
+== runtime ==
+[PASS] python: Python 3.13.3 (C:\Program Files\Python313\python.exe)
+       tested: this interpreter
+[PASS] PyYAML: 6.0.2 (pinned 6.0.2)
+       tested: importlib.metadata
+[PASS] grpcio: 1.85.0 (pinned 1.85.0)
+       tested: importlib.metadata
+[PASS] grpcio-tools: 1.85.0 (pinned 1.85.0)
+       tested: importlib.metadata
+[PASS] huggingface_hub: 2.2.0 (pinned 2.2.0)
+       tested: importlib.metadata
+[PASS] protobuf: 7.36.2 (pinned 7.36.2)
+       tested: importlib.metadata
+[PASS] psutil: 7.2.2 (pinned 7.2.2)
+       tested: importlib.metadata
+[PASS] pytest: 9.1.1 (pinned 9.1.1)
+       tested: importlib.metadata
+[PASS] python-dotenv: 1.2.4 (pinned 1.2.4)
+       tested: importlib.metadata
+[PASS] safetensors: 0.8.0 (pinned 0.8.0)
+       tested: importlib.metadata
+[PASS] torch: 2.10.0+cu126 (pinned 2.10.0)
+       tested: importlib.metadata
+[PASS] transformers: 5.20.1 (pinned 5.20.1)
+       tested: importlib.metadata
+[PASS] numpy: 2.2.4 (needed by the raw-le-c-v1 tensor codec)
+       tested: import
+[PASS] protocol stubs: worker.generated.stage_execution_pb2 imports; local protocol version 1
+       tested: import
+
+== this machine ==
+[INFO] hostname: YakobsPC
+       tested: socket.gethostname()
+[INFO] IPv4 <redacted>: private (Wi-Fi)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 <redacted>: link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 <redacted>: link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)
+       tested: psutil.net_if_addrs()
+[INFO] IPv4 127.0.0.1: loopback (Loopback Pseudo-Interface 1)
+       tested: psutil.net_if_addrs()
+[PASS] public interface: no public IPv4 address on any interface
+       tested: interface classification
+
+== orchestrator http://127.0.0.1:56775 ==
+[PASS] REST reachable: TCP connect to 127.0.0.1:56775 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56775
+[PASS] health: {"status": "ok", "uptime_seconds": 14.4608208, "registered_workers": 2, "online_workers": 2, "online_real_workers": 2, "online_simulated_workers": 0, "online_unknown_source_workers": 0}
+       tested: GET /health
+[INFO] registered workers: rehearsal-a (online, REAL, host YakobsPC, reported addr 127.0.0.1:56786, connected from 127.0.0.1), rehearsal-b (online, REAL, host YakobsPC, reported addr 127.0.0.1:56788, connected from 127.0.0.1)
+       tested: GET /api/workers
+[PASS] worker rehearsal-a: online, REAL, host YakobsPC, heartbeat 0.0s ago
+       tested: GET /api/workers
+[PASS] worker rehearsal-b: online, REAL, host YakobsPC, heartbeat 0.0s ago
+       tested: GET /api/workers
+
+== endpoint rehearsal-a=127.0.0.1:56785 ==
+[PASS] TCP reachable: TCP connect to 127.0.0.1:56785 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56785 (1 ms)
+[PASS] protocol: worker speaks [1], coordinator speaks 1
+       tested: gRPC GetInfo
+[PASS] identity: answers as 'rehearsal-a' on host 'YakobsPC' (pid 21336); self-reported, unauthenticated
+       tested: GetInfo worker_id
+[INFO] worker limits: models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False
+       tested: GetInfo
+
+== endpoint rehearsal-b=127.0.0.1:56787 ==
+[PASS] TCP reachable: TCP connect to 127.0.0.1:56787 succeeded
+       tested: DNS + TCP connect 127.0.0.1:56787 (1 ms)
+[PASS] protocol: worker speaks [1], coordinator speaks 1
+       tested: gRPC GetInfo
+[PASS] identity: answers as 'rehearsal-b' on host 'YakobsPC' (pid 15292); self-reported, unauthenticated
+       tested: GetInfo worker_id
+[INFO] worker limits: models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False
+       tested: GetInfo
+
+== plan ==
+[SKIP] validity: not tested: no --plan given
+
+SUMMARY: 25 PASS, 0 WARN, 0 FAIL, 1 SKIP, 8 INFO -- no failures

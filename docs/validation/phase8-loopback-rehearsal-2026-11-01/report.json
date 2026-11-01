@@ -1,0 +1,353 @@
+{
+  "phase8_lan_report_schema_version": 1,
+  "meta": {
+    "started_at": "2026-11-01T13:40:03",
+    "coordinator_hostname": "YakobsPC",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.3",
+    "orchestrator_url": "http://127.0.0.1:56775",
+    "endpoints": {
+      "rehearsal-a": "127.0.0.1:56785",
+      "rehearsal-b": "127.0.0.1:56787"
+    },
+    "batch": 2,
+    "tokens": "1,2,3,4,5,6,7,8;9,10,11,12,13,14,15,16",
+    "repeat": 3,
+    "allow_single_host": true,
+    "git": {
+      "commit": "b1ab6acaaf97fd0b98026d13d45aef3c8c78d1bb",
+      "branch": "main",
+      "uncommitted_changes": true
+    },
+    "coordinator_ipv4": [
+      [
+        "Wi-Fi",
+        "<redacted>",
+        "private"
+      ],
+      [
+        "Local Area Connection* 3",
+        "<redacted>",
+        "link-local (APIPA: no DHCP lease; not a usable LAN address)"
+      ],
+      [
+        "Local Area Connection* 4",
+        "<redacted>",
+        "link-local (APIPA: no DHCP lease; not a usable LAN address)"
+      ],
+      [
+        "Loopback Pseudo-Interface 1",
+        "127.0.0.1",
+        "loopback"
+      ]
+    ],
+    "finished_at": "2026-11-01T13:40:34",
+    "rehearsal": "one machine, 127.0.0.1, processes started by `phase8_lan.py rehearse`"
+  },
+  "classification": "REAL_MULTI_PROCESS",
+  "plan_source": "REHEARSAL: live registrations were INFEASIBLE on this machine; plan built from the same REAL records with SYNTHETIC capacity -- rehearsal only",
+  "steps": [
+    {
+      "id": "P1",
+      "title": "coordinator environment (host, IPs, commit)",
+      "status": "PASS",
+      "detail": "coordinator YakobsPC, commit b1ab6acaaf97fd0b98026d13d45aef3c8c78d1bb on main (UNCOMMITTED changes present: record them)",
+      "seconds": 0.052,
+      "required": false,
+      "evidence": {
+        "ipv4": [
+          [
+            "Wi-Fi",
+            "<redacted>",
+            "private"
+          ],
+          [
+            "Local Area Connection* 3",
+            "<redacted>",
+            "link-local (APIPA: no DHCP lease; not a usable LAN address)"
+          ],
+          [
+            "Local Area Connection* 4",
+            "<redacted>",
+            "link-local (APIPA: no DHCP lease; not a usable LAN address)"
+          ],
+          [
+            "Loopback Pseudo-Interface 1",
+            "127.0.0.1",
+            "loopback"
+          ]
+        ],
+        "git": {
+          "commit": "b1ab6acaaf97fd0b98026d13d45aef3c8c78d1bb",
+          "branch": "main",
+          "uncommitted_changes": true
+        }
+      }
+    },
+    {
+      "id": "P2",
+      "title": "wait for registrations and backend probes",
+      "status": "PASS",
+      "detail": "all 2 workers registered, online, backend probes finished (waited 4.2s)",
+      "seconds": 4.184,
+      "required": true,
+      "evidence": {}
+    },
+    {
+      "id": "P3",
+      "title": "preflight: orchestrator, registrations, endpoints, protocol",
+      "status": "PASS",
+      "detail": "{'PASS': 25, 'WARN': 0, 'FAIL': 0, 'SKIP': 1, 'INFO': 8}",
+      "seconds": 0.254,
+      "required": true,
+      "evidence": {
+        "counts": {
+          "PASS": 25,
+          "WARN": 0,
+          "FAIL": 0,
+          "SKIP": 1,
+          "INFO": 8
+        }
+      }
+    },
+    {
+      "id": "P4",
+      "title": "plan the tiny model across the endpoint workers",
+      "status": "PASS",
+      "detail": "REHEARSAL: live registrations were INFEASIBLE on this machine; plan built from the same REAL records with SYNTHETIC capacity -- rehearsal only; plan d3f05553cd290dc5...; stages [{'stage': 0, 'worker': 'rehearsal-b', 'host': 'YakobsPC', 'units': [0, 3]}, {'stage': 1, 'worker': 'rehearsal-a', 'host': 'YakobsPC', 'units': [3, 7]}]",
+      "seconds": 7.527,
+      "required": true,
+      "evidence": {
+        "source": "REHEARSAL: live registrations were INFEASIBLE on this machine; plan built from the same REAL records with SYNTHETIC capacity -- rehearsal only",
+        "stages": [
+          {
+            "stage": 0,
+            "worker": "rehearsal-b",
+            "host": "YakobsPC",
+            "units": [
+              0,
+              3
+            ]
+          },
+          {
+            "stage": 1,
+            "worker": "rehearsal-a",
+            "host": "YakobsPC",
+            "units": [
+              3,
+              7
+            ]
+          }
+        ],
+        "live_infeasibility": [
+          "The whole model on one worker needs 700.40 MiB; the largest effective capacity is 29.74 MiB (rehearsal-a); all usable workers together have 59.41 MiB.",
+          "Unit block.3 alone needs 700.20 MiB (including the per-worker runtime overhead), more than any worker can hold.",
+          "Every stage also pays a 700.00 MiB runtime overhead, so adding workers adds memory as well as capacity.",
+          "Options: shorter context_length/prompt_length, logits_positions='last', fp16/bf16 weights, or more/larger workers."
+        ]
+      }
+    },
+    {
+      "id": "P5",
+      "title": "preflight: plan, assignment, limits",
+      "status": "PASS",
+      "detail": "{'PASS': 16, 'WARN': 1, 'FAIL': 0, 'SKIP': 0, 'INFO': 9}",
+      "seconds": 0.099,
+      "required": true,
+      "evidence": {
+        "counts": {
+          "PASS": 16,
+          "WARN": 1,
+          "FAIL": 0,
+          "SKIP": 0,
+          "INFO": 9
+        }
+      }
+    },
+    {
+      "id": "P6",
+      "title": "execute the plan remotely x3, compare with the local reference",
+      "status": "PASS",
+      "detail": "run 1: succeeded, diff 0.0, 0.2275s; run 2: succeeded, diff 0.0, 0.2299s; run 3: succeeded, diff 0.0, 0.2327s (single runs, not a benchmark)",
+      "seconds": 0.696,
+      "required": true,
+      "evidence": {
+        "runs": [
+          {
+            "run": 1,
+            "status": "succeeded",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "next_token_ids": [
+              60,
+              96
+            ],
+            "output_shape": [
+              2,
+              8,
+              128
+            ],
+            "elapsed_seconds": 0.2275,
+            "test_classification": "REAL_MULTI_PROCESS",
+            "stages": [
+              {
+                "stage": 0,
+                "worker": "rehearsal-b",
+                "endpoint": "127.0.0.1:56787",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 15292
+                },
+                "round_trip_seconds": 0.0152
+              },
+              {
+                "stage": 1,
+                "worker": "rehearsal-a",
+                "endpoint": "127.0.0.1:56785",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 21336
+                },
+                "round_trip_seconds": 0.0196
+              }
+            ],
+            "error": null
+          },
+          {
+            "run": 2,
+            "status": "succeeded",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "next_token_ids": [
+              60,
+              96
+            ],
+            "output_shape": [
+              2,
+              8,
+              128
+            ],
+            "elapsed_seconds": 0.2299,
+            "test_classification": "REAL_MULTI_PROCESS",
+            "stages": [
+              {
+                "stage": 0,
+                "worker": "rehearsal-b",
+                "endpoint": "127.0.0.1:56787",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 15292
+                },
+                "round_trip_seconds": 0.0125
+              },
+              {
+                "stage": 1,
+                "worker": "rehearsal-a",
+                "endpoint": "127.0.0.1:56785",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 21336
+                },
+                "round_trip_seconds": 0.0094
+              }
+            ],
+            "error": null
+          },
+          {
+            "run": 3,
+            "status": "succeeded",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "next_token_ids": [
+              60,
+              96
+            ],
+            "output_shape": [
+              2,
+              8,
+              128
+            ],
+            "elapsed_seconds": 0.2327,
+            "test_classification": "REAL_MULTI_PROCESS",
+            "stages": [
+              {
+                "stage": 0,
+                "worker": "rehearsal-b",
+                "endpoint": "127.0.0.1:56787",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 15292
+                },
+                "round_trip_seconds": 0.0097
+              },
+              {
+                "stage": 1,
+                "worker": "rehearsal-a",
+                "endpoint": "127.0.0.1:56785",
+                "reported": {
+                  "hostname": "YakobsPC",
+                  "pid": 21336
+                },
+                "round_trip_seconds": 0.0081
+              }
+            ],
+            "error": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "P7",
+      "title": "multi-machine criterion (evidence-based classification)",
+      "status": "PASS",
+      "detail": "classification REAL_MULTI_PROCESS: 1 reported hostname(s) ['YakobsPC'], 0 non-loopback registration peer IP(s) [] -- REHEARSAL (--allow-single-host): multi-machine criterion NOT met and NOT claimed",
+      "seconds": 0.002,
+      "required": true,
+      "evidence": {
+        "per_worker": {
+          "rehearsal-b": {
+            "reported_hostname": "YakobsPC",
+            "reported_pid": 15292,
+            "endpoint": "127.0.0.1:56787",
+            "orchestrator_observed_peer_ip": "127.0.0.1",
+            "orchestrator_hostname": "YakobsPC",
+            "registered_address": "127.0.0.1:56788"
+          },
+          "rehearsal-a": {
+            "reported_hostname": "YakobsPC",
+            "reported_pid": 21336,
+            "endpoint": "127.0.0.1:56785",
+            "orchestrator_observed_peer_ip": "127.0.0.1",
+            "orchestrator_hostname": "YakobsPC",
+            "registered_address": "127.0.0.1:56786"
+          }
+        },
+        "distinct_reported_hostnames": [
+          "YakobsPC"
+        ],
+        "distinct_non_loopback_peer_ips": [],
+        "classification": "REAL_MULTI_PROCESS",
+        "basis": "worker self-reported hostnames (unauthenticated) AND the IPs the orchestrator saw their registrations come from (TCP peer addresses)"
+      }
+    },
+    {
+      "id": "P8",
+      "title": "disconnect/restart: worker stop, restart, orchestrator restart",
+      "status": "PASS",
+      "detail": "stopped rehearsal-a: offline after 0.0s; execution failed (RETRIES_EXHAUSTED, executed=False); restarted: ready after 3.6s; execution succeeded; orchestrator restarted: all workers re-registered within 1.0s; execution succeeded",
+      "seconds": 18.075,
+      "required": true,
+      "evidence": {
+        "victim": "rehearsal-a",
+        "down_error": {
+          "code": "RETRIES_EXHAUSTED",
+          "executed": false,
+          "stage_index": 1,
+          "message": "not executed after 2 attempts (last: unreachable)"
+        }
+      }
+    }
+  ],
+  "failed_steps": [],
+  "result": "PASS"
+}

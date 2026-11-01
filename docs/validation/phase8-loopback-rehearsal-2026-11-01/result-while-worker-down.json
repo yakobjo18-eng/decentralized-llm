@@ -1,0 +1,249 @@
+{
+ "execution_result_schema_version": 1,
+ "status": "failed",
+ "execution_mode": "remote",
+ "distributed": false,
+ "distributed_note": "1 stage(s) ran in 1 separate worker process(es) on 1 host(s), activations passed over gRPC. Hostnames and pids are reported by the workers (unauthenticated); one host means this was NOT a multi-machine run.",
+ "request_id": "26152bf0de96444dbf7674c266e7e5dc",
+ "stage_interface_version": 1,
+ "protocol_version": 1,
+ "transport": "gRPC StageExecution protocol v1 (insecure channel: unauthenticated, unencrypted)",
+ "coordinator": {
+  "hostname": "YakobsPC",
+  "pid": 46840
+ },
+ "model": {
+  "model_id": "builtin:tiny-gpt2-v1",
+  "description": "4-layer GPT-2 architecture, hidden 32, vocab 128, 32 positions; formula weights (untrained)",
+  "config_fingerprint": "78241c314848e65fe9abc6b6e74835c3db0f3a143504365c20d197c47c1c6337",
+  "weights_version": "formula-sin-v1",
+  "total_params": 56000,
+  "units": [
+   "embeddings",
+   "block.0",
+   "block.1",
+   "block.2",
+   "block.3",
+   "final_norm",
+   "lm_head"
+  ]
+ },
+ "plan": {
+  "plan_id": "d3f05553cd290dc58ac11f13d4c7b2bdb2af80c45cf1d3773808741aadcc3604",
+  "plan_id_basis": "inputs_fingerprint (sha256 of the plan content)",
+  "partition_plan_schema_version": 1,
+  "created_at": "2026-11-01T08:10:15.308844+00:00",
+  "planner": {
+   "name": "model-partitioner",
+   "version": "0.1.0",
+   "algorithm": "dp-min-bottleneck-v1"
+  },
+  "feasible": true,
+  "includes_simulated_workers": false,
+  "executable": false,
+  "executable_reason": "a multi-stage plan cannot run in one process: it needs activation transport between workers (Phase 6: run it with `execute --remote`, one worker process per stage, or emulate it locally)",
+  "warnings": [
+   "Inter-stage transfer time is NOT modelled (no link bandwidth given); real pipelines pay it per boundary.",
+   "rehearsal-a shares host 'YakobsPC' with 1 other worker(s); each is given 1/2 of its usable RAM. Local processes on one machine are NOT independent computers.",
+   "rehearsal-b shares host 'YakobsPC' with 1 other worker(s); each is given 1/2 of its usable RAM. Local processes on one machine are NOT independent computers.",
+   "rehearsal-a is this planning machine (YakobsPC): its available RAM was measured while this planner process (~700 MiB, mostly torch + transformers) was running, so it is lower than a worker would see without the planner.",
+   "rehearsal-b is this planning machine (YakobsPC): its available RAM was measured while this planner process (~700 MiB, mostly torch + transformers) was running, so it is lower than a worker would see without the planner."
+  ],
+  "assumptions": [
+   "Stage time = calculated FLOPs / effective throughput; elementwise ops and memory-bandwidth limits are not modelled.",
+   "Memory covers a worst-case prefill of prompt_length tokens with a KV cache sized for context_length.",
+   "Activations assume eager attention (scores materialized) and are freed layer by layer.",
+   "The first stage holds the embeddings, the last stage the final norm and LM head (layer order is fixed).",
+   "rehearsal-a throughput: 10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed).",
+   "rehearsal-b throughput: 10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)."
+  ]
+ },
+ "worker_assignments": [
+  {
+   "stage_index": 0,
+   "worker_id": "rehearsal-b",
+   "profile_source": "REAL",
+   "planned_hostname": "YakobsPC",
+   "unit_range": [
+    0,
+    3
+   ],
+   "units": [
+    "embeddings",
+    "block.0",
+    "block.1"
+   ],
+   "endpoint": "127.0.0.1:56787"
+  },
+  {
+   "stage_index": 1,
+   "worker_id": "rehearsal-a",
+   "profile_source": "REAL",
+   "planned_hostname": "YakobsPC",
+   "unit_range": [
+    3,
+    7
+   ],
+   "units": [
+    "block.2",
+    "block.3",
+    "final_norm",
+    "lm_head"
+   ],
+   "endpoint": "127.0.0.1:56785"
+  }
+ ],
+ "limits": {
+  "max_batch_size": 8,
+  "max_sequence_length": null,
+  "max_activation_bytes": 67108864,
+  "max_weight_bytes": 67108864
+ },
+ "remote_options": {
+  "stage_timeout_seconds": 30,
+  "connect_timeout_seconds": 2.0,
+  "max_attempts": 2,
+  "retry_backoff_seconds": 0.2,
+  "max_message_bytes": 33554432,
+  "max_tensor_bytes": 16777216
+ },
+ "input": {
+  "kind": "token_ids",
+  "shape": [
+   2,
+   8
+  ],
+  "dtype": "int64"
+ },
+ "preflight": {
+  "batch": 2,
+  "tokens": 8,
+  "largest_boundary_bytes": 8192,
+  "largest_unit_activation_bytes": 20480,
+  "weight_bytes": 224000,
+  "boundary_bytes_provenance": "CALCULATED",
+  "unit_activation_provenance": "ESTIMATED (Phase 4 activation model, eager attention)"
+ },
+ "stages": [
+  {
+   "stage_index": 0,
+   "worker_id": "rehearsal-b",
+   "endpoint": "127.0.0.1:56787",
+   "unit_range": [
+    0,
+    3
+   ],
+   "request_bytes": 12735,
+   "worker_reported": {
+    "hostname": "YakobsPC",
+    "pid": 15292
+   },
+   "input": {
+    "kind": "token_ids",
+    "shape": [
+     2,
+     8
+    ],
+    "dtype": "int64"
+   },
+   "output": {
+    "kind": "hidden_states",
+    "shape": [
+     2,
+     8,
+     32
+    ],
+    "dtype": "fp32"
+   },
+   "response_bytes": 2169,
+   "attempts": [
+    {
+     "attempt": 1,
+     "outcome": "STAGE_STATUS_OK",
+     "executed": true,
+     "retried": false,
+     "seconds": 0.005385900032706559
+    }
+   ],
+   "round_trip_seconds": 0.011389999999664724,
+   "worker_timing": {
+    "validate_seconds": 0.000998100033029914,
+    "compute_seconds": 0.0018402000423520803,
+    "total_seconds": 0.0034006000496447086
+   }
+  }
+ ],
+ "output": null,
+ "reference_check": null,
+ "elapsed": {
+  "total_seconds": 4.234591199900024,
+  "provenance": "MEASURED: wall clock (time.perf_counter) of this one run on the coordinator; not a benchmark"
+ },
+ "warnings": [
+  "Worker records were not supplied to the coordinator, so worker existence and capacity were not re-checked here; each worker still validates the plan and its own assignment."
+ ],
+ "error": {
+  "type": "RemoteStageError",
+  "message": "not executed after 2 attempts (last: unreachable)",
+  "phase": "dispatch",
+  "stage_index": 1,
+  "problems": [],
+  "causes": [],
+  "traceback": [
+   "Traceback (most recent call last):\n",
+   "  File \"C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\model-partitioner\\partitioner\\execution\\remote.py\", line 304, in execute_plan_remote\n    response, attempts = _dispatch(grpc, pb, pb_grpc.StageExecutionStub(channel), channel, request, options)\n                         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+   "  File \"C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\model-partitioner\\partitioner\\execution\\remote.py\", line 148, in _dispatch\n    raise RemoteStageError(\"RETRIES_EXHAUSTED\",\n                           f\"not executed after {options.max_attempts} attempts (last: {attempts[-1]['outcome']})\",\n                           executed=False, attempts=attempts)\n",
+   "partitioner.execution.remote.RemoteStageError: not executed after 2 attempts (last: unreachable)\n"
+  ],
+  "code": "RETRIES_EXHAUSTED",
+  "executed": false,
+  "attempts": [
+   {
+    "attempt": 1,
+    "outcome": "unreachable",
+    "executed": false,
+    "retried": true,
+    "detail": "no connection within 2.0s; request not sent"
+   },
+   {
+    "attempt": 2,
+    "outcome": "unreachable",
+    "executed": false,
+    "retried": false,
+    "detail": "no connection within 2.0s; request not sent"
+   }
+  ]
+ },
+ "failed_stage": {
+  "stage_index": 1,
+  "worker_id": "rehearsal-a",
+  "endpoint": "127.0.0.1:56785",
+  "unit_range": [
+   3,
+   7
+  ],
+  "request_bytes": 14649,
+  "attempts": [
+   {
+    "attempt": 1,
+    "outcome": "unreachable",
+    "executed": false,
+    "retried": true,
+    "detail": "no connection within 2.0s; request not sent"
+   },
+   {
+    "attempt": 2,
+    "outcome": "unreachable",
+    "executed": false,
+    "retried": false,
+    "detail": "no connection within 2.0s; request not sent"
+   }
+  ]
+ },
+ "distinct_worker_processes": 1,
+ "distinct_worker_hostnames": [
+  "YakobsPC"
+ ],
+ "test_classification": "REAL_MULTI_PROCESS",
+ "test_classification_basis": "derived from the hostnames/pids the workers reported (unauthenticated); REAL_MULTI_MACHINE needs two or more distinct hostnames"
+}

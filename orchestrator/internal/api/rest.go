@@ -170,8 +170,11 @@ type backendView struct {
 // client (the dashboard, a test) can distinguish "known false/zero"
 // from "not reported" by checking for the key's presence.
 type workerView struct {
-	ID                      string    `json:"id"`
-	Address                 string    `json:"address"`
+	ID      string `json:"id"`
+	Address string `json:"address"`
+	// ObservedPeerIP (Phase 8): where the worker's Register call
+	// actually came from, as seen by this orchestrator. "" if unknown.
+	ObservedPeerIP          string    `json:"observed_peer_ip"`
 	Hostname                string    `json:"hostname"`
 	CPULogicalCores         int32     `json:"cpu_logical_cores"`
 	TotalRAMBytes           int64     `json:"total_ram_bytes"`
@@ -276,6 +279,7 @@ func (s *Server) toWorkerView(rec registry.WorkerRecord) workerView {
 	return workerView{
 		ID:                      rec.ID,
 		Address:                 rec.Address,
+		ObservedPeerIP:          rec.ObservedPeerIP,
 		Hostname:                rec.Hostname,
 		CPULogicalCores:         rec.CPULogicalCores,
 		TotalRAMBytes:           rec.TotalRAMBytes,

@@ -39,6 +39,13 @@ import (
 	"time"
 )
 
+func peerOrUnknown(ip string) string {
+	if ip == "" {
+		return "unknown peer"
+	}
+	return "peer " + ip
+}
+
 // ErrWorkerIDConflict is returned by Register when a worker ID is
 // already registered, is currently considered online (a heartbeat was
 // seen within the configured timeout), and the new registration
@@ -183,8 +190,13 @@ type LiveMetrics struct {
 // worker. 0 (the zero value) is treated the same as 1 by readers. 2
 // means the Phase 3 fields below are populated too.
 type WorkerRecord struct {
-	ID              string
-	Address         string
+	ID      string
+	Address string
+	// ObservedPeerIP (Phase 8) is the IP the orchestrator saw the
+	// Register call come from (gRPC peer), as opposed to Address, which
+	// the worker reports about itself. Empty when unknown (e.g. tests
+	// that call the registry directly).
+	ObservedPeerIP  string
 	Hostname        string
 	CPULogicalCores int32
 	TotalRAMBytes   int64
@@ -341,14 +353,20 @@ func (r *InMemoryRegistry) Register(rec WorkerRecord) (bool, error) {
 	if isKnown {
 		wasOnline := r.isOnline(existing, now)
 		sameAddress := existing.Address == rec.Address
-		if wasOnline && !sameAddress {
+		// Phase 8: two machines can report the SAME address (e.g. both
+		// keep their Health server on 127.0.0.1:50100), so the address
+		// the connection really came from must match too, when known.
+		samePeer := existing.ObservedPeerIP == "" || rec.ObservedPeerIP == "" ||
+			existing.ObservedPeerIP == rec.ObservedPeerIP
+		if wasOnline && !(sameAddress && samePeer) {
 			// A different machine (or a misconfigured duplicate worker_id)
 			// is trying to take over an ID that's actively in use. Reject
 			// rather than silently overwrite the existing worker's
 			// connection info out from under it.
 			return false, fmt.Errorf(
-				"%w: existing address %q, attempted address %q",
-				ErrWorkerIDConflict, existing.Address, rec.Address,
+				"%w: existing address %q (from %s), attempted address %q (from %s)",
+				ErrWorkerIDConflict, existing.Address, peerOrUnknown(existing.ObservedPeerIP),
+				rec.Address, peerOrUnknown(rec.ObservedPeerIP),
 			)
 		}
 		// Either the same worker re-registering from the same address

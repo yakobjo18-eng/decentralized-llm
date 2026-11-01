@@ -119,7 +119,32 @@ def test_port_in_use_is_reported(tmp_path):
         r = pf.Report()
         pf.check_worker_config(r, write(tmp_path, GOOD.format(hp=free_port(), ep=port)))
     c = one(r, "worker config", f"execution_listen_host port {port}")
-    assert c.status == pf.WARN and "in use" in c.detail
+    # Held by THIS test process (python.exe): could be our own worker, so a WARN naming the owner.
+    assert c.status == pf.WARN and "held by python" in c.detail.lower() and str(__import__("os").getpid()) in c.detail
+
+
+def test_port_held_by_an_unrelated_program_fails(tmp_path, monkeypatch):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        s.listen()
+        port = s.getsockname()[1]
+        monkeypatch.setattr(pf, "port_owner", lambda p: (4242, "java.exe"))  # stand-in for e.g. a Java server on 8080
+        r = pf.Report()
+        pf.check_worker_config(r, write(tmp_path, GOOD.format(hp=free_port(), ep=port)))
+    c = one(r, "worker config", f"execution_listen_host port {port}")
+    assert c.status == pf.FAIL and "unrelated program: java.exe (pid 4242)" in c.detail and c.hint
+
+
+def test_orchestrator_port_held_by_orchestrator_is_info(tmp_path, monkeypatch):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        s.listen()
+        port = s.getsockname()[1]
+        monkeypatch.setattr(pf, "port_owner", lambda p: (77, "orchestrator.exe"))
+        r = pf.Report()
+        pf.check_orchestrator_config(r, write(tmp_path, f'grpc_address: "127.0.0.1:{port}"\n', "o.yaml"))
+    c = one(r, "orchestrator config", f"grpc_address port {port}")
+    assert c.status == pf.INFO and "orchestrator.exe" in c.detail
 
 
 # ---- TCP failure classification ------------------------------------------------

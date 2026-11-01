@@ -9,7 +9,10 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net"
 	"time"
+
+	"google.golang.org/grpc/peer"
 
 	commonpb "orchestrator/internal/proto/common"
 	registrypb "orchestrator/internal/proto/registry"
@@ -54,6 +57,20 @@ func toProfileSource(s commonpb.ProfileSource) registry.ProfileSource {
 	default:
 		return registry.ProfileSourceUnknown
 	}
+}
+
+// peerIP is the IP address the current RPC came from, without the
+// (ephemeral) port; "" if unknown.
+func peerIP(ctx context.Context) string {
+	p, ok := peer.FromContext(ctx)
+	if !ok || p.Addr == nil {
+		return ""
+	}
+	host, _, err := net.SplitHostPort(p.Addr.String())
+	if err != nil {
+		return ""
+	}
+	return host
 }
 
 func unixMs(ms int64) time.Time {
@@ -108,6 +125,8 @@ func (s *RegistryServer) Register(ctx context.Context, req *registrypb.RegisterR
 		GPUMetrics:            toRegistryGPUMetrics(hw.GetGpuMetrics()),
 		BackendProbePending:   hw.GetBackendProbePending(),
 	}
+
+	rec.ObservedPeerIP = peerIP(ctx)
 
 	if rec.ProfileSource == registry.ProfileSourceSimulated && !s.opts.AllowSimulatedWorkers {
 		log.Printf("rejected registration of %q: SIMULATED hardware profile %q while allow_simulated_workers is false",

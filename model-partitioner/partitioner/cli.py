@@ -294,7 +294,9 @@ def _cmd_preflight(args) -> int:
             return 2
         endpoints[wid] = addr
     report = preflight.run(args.worker_config, args.orchestrator, args.expect_worker, endpoints, args.plan,
-                           args.require_multi_host, args.timeout, args.skip_runtime)
+                           args.require_multi_host, args.timeout, args.skip_runtime,
+                           orchestrator_configs=args.orchestrator_config, probe_orchestrator=args.probe_orchestrator,
+                           peer_ip=args.peer_ip)
     if args.out:
         from pathlib import Path
 
@@ -350,6 +352,12 @@ def main(argv: List[str] = None) -> int:
     p.add_argument("--require-multi-host", action="store_true", help="FAIL unless the plan spans two or more hosts")
     p.add_argument("--timeout", type=float, default=3.0, help="per network check, seconds")
     p.add_argument("--skip-runtime", action="store_true", help="skip the dependency checks")
+    p.add_argument("--orchestrator-config", action="append", default=[], metavar="YAML",
+                   help="Phase 8: check the orchestrator's config on THIS machine (bind, ownership, port, firewall)")
+    p.add_argument("--probe-orchestrator", action="store_true",
+                   help="Phase 8: TCP-connect to each --worker-config's orchestrator_address (start the orchestrator first)")
+    p.add_argument("--peer-ip", default="", metavar="IP",
+                   help="the other machine's IP, used only to print exact firewall commands in hints")
     p.add_argument("--json", action="store_true", help="print the report as JSON")
     p.add_argument("--out", help="also write the JSON report here")
     args = parser.parse_args(argv)

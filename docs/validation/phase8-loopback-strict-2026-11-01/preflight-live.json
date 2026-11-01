@@ -1,0 +1,320 @@
+{
+ "preflight_schema_version": 1,
+ "hostname": "YakobsPC",
+ "counts": {
+  "PASS": 25,
+  "WARN": 0,
+  "FAIL": 0,
+  "SKIP": 1,
+  "INFO": 8
+ },
+ "ok": true,
+ "checks": [
+  {
+   "section": "runtime",
+   "name": "python",
+   "status": "PASS",
+   "detail": "Python 3.13.3 (C:\\Program Files\\Python313\\python.exe)",
+   "hint": "",
+   "tested": "this interpreter",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "PyYAML",
+   "status": "PASS",
+   "detail": "6.0.2 (pinned 6.0.2)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "grpcio",
+   "status": "PASS",
+   "detail": "1.85.0 (pinned 1.85.0)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "grpcio-tools",
+   "status": "PASS",
+   "detail": "1.85.0 (pinned 1.85.0)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "huggingface_hub",
+   "status": "PASS",
+   "detail": "2.2.0 (pinned 2.2.0)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "protobuf",
+   "status": "PASS",
+   "detail": "7.36.2 (pinned 7.36.2)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "psutil",
+   "status": "PASS",
+   "detail": "7.2.2 (pinned 7.2.2)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "pytest",
+   "status": "PASS",
+   "detail": "9.1.1 (pinned 9.1.1)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "python-dotenv",
+   "status": "PASS",
+   "detail": "1.2.4 (pinned 1.2.4)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "safetensors",
+   "status": "PASS",
+   "detail": "0.8.0 (pinned 0.8.0)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "torch",
+   "status": "PASS",
+   "detail": "2.10.0+cu126 (pinned 2.10.0)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "transformers",
+   "status": "PASS",
+   "detail": "5.20.1 (pinned 5.20.1)",
+   "hint": "",
+   "tested": "importlib.metadata",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "numpy",
+   "status": "PASS",
+   "detail": "2.2.4 (needed by the raw-le-c-v1 tensor codec)",
+   "hint": "",
+   "tested": "import",
+   "data": {}
+  },
+  {
+   "section": "runtime",
+   "name": "protocol stubs",
+   "status": "PASS",
+   "detail": "worker.generated.stage_execution_pb2 imports; local protocol version 1",
+   "hint": "",
+   "tested": "import",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "hostname",
+   "status": "INFO",
+   "detail": "YakobsPC",
+   "hint": "",
+   "tested": "socket.gethostname()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "private (Wi-Fi)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 <redacted>",
+   "status": "INFO",
+   "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "IPv4 127.0.0.1",
+   "status": "INFO",
+   "detail": "loopback (Loopback Pseudo-Interface 1)",
+   "hint": "",
+   "tested": "psutil.net_if_addrs()",
+   "data": {}
+  },
+  {
+   "section": "this machine",
+   "name": "public interface",
+   "status": "PASS",
+   "detail": "no public IPv4 address on any interface",
+   "hint": "",
+   "tested": "interface classification",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56936",
+   "name": "REST reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56936 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56936",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56936",
+   "name": "health",
+   "status": "PASS",
+   "detail": "{\"status\": \"ok\", \"uptime_seconds\": 13.8958009, \"registered_workers\": 2, \"online_workers\": 2, \"online_real_workers\": 2, \"online_simulated_workers\": 0, \"online_unknown_source_workers\": 0}",
+   "hint": "",
+   "tested": "GET /health",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56936",
+   "name": "registered workers",
+   "status": "INFO",
+   "detail": "rehearsal-a (online, REAL, host YakobsPC, reported addr 127.0.0.1:56939, connected from 127.0.0.1), rehearsal-b (online, REAL, host YakobsPC, reported addr 127.0.0.1:56941, connected from 127.0.0.1)",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56936",
+   "name": "worker rehearsal-a",
+   "status": "PASS",
+   "detail": "online, REAL, host YakobsPC, heartbeat 0.1s ago",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "orchestrator http://127.0.0.1:56936",
+   "name": "worker rehearsal-b",
+   "status": "PASS",
+   "detail": "online, REAL, host YakobsPC, heartbeat 0.1s ago",
+   "hint": "",
+   "tested": "GET /api/workers",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56938",
+   "name": "TCP reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56938 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56938 (14 ms)",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56938",
+   "name": "protocol",
+   "status": "PASS",
+   "detail": "worker speaks [1], coordinator speaks 1",
+   "hint": "",
+   "tested": "gRPC GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56938",
+   "name": "identity",
+   "status": "PASS",
+   "detail": "answers as 'rehearsal-a' on host 'YakobsPC' (pid 8012); self-reported, unauthenticated",
+   "hint": "",
+   "tested": "GetInfo worker_id",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-a=127.0.0.1:56938",
+   "name": "worker limits",
+   "status": "INFO",
+   "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+   "hint": "",
+   "tested": "GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56940",
+   "name": "TCP reachable",
+   "status": "PASS",
+   "detail": "TCP connect to 127.0.0.1:56940 succeeded",
+   "hint": "",
+   "tested": "DNS + TCP connect 127.0.0.1:56940 (15 ms)",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56940",
+   "name": "protocol",
+   "status": "PASS",
+   "detail": "worker speaks [1], coordinator speaks 1",
+   "hint": "",
+   "tested": "gRPC GetInfo",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56940",
+   "name": "identity",
+   "status": "PASS",
+   "detail": "answers as 'rehearsal-b' on host 'YakobsPC' (pid 23516); self-reported, unauthenticated",
+   "hint": "",
+   "tested": "GetInfo worker_id",
+   "data": {}
+  },
+  {
+   "section": "endpoint rehearsal-b=127.0.0.1:56940",
+   "name": "worker limits",
+   "status": "INFO",
+   "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+   "hint": "",
+   "tested": "GetInfo",
+   "data": {}
+  },
+  {
+   "section": "plan",
+   "name": "validity",
+   "status": "SKIP",
+   "detail": "not tested: no --plan given",
+   "hint": "",
+   "tested": "",
+   "data": {}
+  }
+ ]
+}
