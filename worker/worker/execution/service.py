@@ -126,6 +126,31 @@ class StageExecutionServicer(pb_grpc.StageExecutionServicer):
                     resp.timing.compute_seconds, f" [{resp.error.code}: {resp.error.message}]" if resp.error.code else "")
         return resp
 
+    def GetInfo(self, request, context):  # noqa: N802 -- gRPC-generated method name
+        """Phase 7: read-only self-description for preflight. Executes
+        nothing and takes no concurrency slot."""
+        from partitioner.execution.models import EXECUTABLE_MODEL_IDS
+        from partitioner.execution.wire import ENCODING
+
+        logger.info("GetInfo from a client speaking protocol %d", int(request.protocol_version))
+        c = self.cfg
+        return pb.GetInfoResponse(
+            protocol_version=PROTOCOL_VERSION,
+            supported_versions=[PROTOCOL_VERSION],
+            worker_id=c.worker_id,
+            worker_hostname=c.hostname,
+            worker_pid=os.getpid(),
+            executable_model_ids=list(EXECUTABLE_MODEL_IDS),
+            supported_encodings=[ENCODING],
+            max_tensor_bytes=c.max_tensor_bytes,
+            max_message_bytes=c.max_message_bytes,
+            max_concurrent=c.max_concurrent,
+            max_batch=c.max_batch,
+            max_sequence=c.max_sequence,
+            min_deadline_seconds=c.min_deadline_seconds,
+            authenticated=False,
+        )
+
     # ---- handling ------------------------------------------------------
 
     def _handle(self, request, context, timing):

@@ -3,11 +3,15 @@
 # Nothing here is a hardcoded IP meant for a specific machine -- this is
 # the default local configuration.
 
-# Address the dashboard-facing REST API binds to.
-rest_address: "0.0.0.0:8080"
+# Address the dashboard-facing REST API binds to. Loopback by default
+# (Phase 7). To serve other machines, use this machine's PRIVATE LAN IP,
+# e.g. "192.168.1.10:8080". Public IPs and hostnames are refused at
+# startup; 0.0.0.0 is allowed but logged as a warning. Unauthenticated.
+rest_address: "127.0.0.1:8080"
 
-# Address the WorkerRegistry gRPC service binds to.
-grpc_address: "0.0.0.0:9090"
+# Address the WorkerRegistry gRPC service binds to. Workers on other
+# machines need this set to this machine's PRIVATE LAN IP.
+grpc_address: "127.0.0.1:9090"
 
 log_level: "info"
 

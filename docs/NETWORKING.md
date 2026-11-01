@@ -10,9 +10,9 @@ onward) -- Phase 1's own smoke test runs everything over loopback
 
 | Component | Default port | Direction |
 |---|---|---|
-| Orchestrator REST API | 8080/tcp | Inbound, from the frontend/dashboard machine and operators |
-| Orchestrator gRPC (WorkerRegistry) | 9090/tcp | Inbound, from every worker machine |
-| Worker gRPC (Health) | 50100/tcp (configurable per worker) | Inbound, from the orchestrator |
+| Orchestrator REST API | 8080/tcp, bound to **127.0.0.1 by default** (Phase 7) | Inbound only if another machine needs it (the Phase 7 procedure keeps it local) |
+| Orchestrator gRPC (WorkerRegistry) | 9090/tcp, bound to **127.0.0.1 by default** (Phase 7) | Inbound, from every worker machine: set `grpc_address` to the private LAN IP |
+| Worker gRPC (Health) | 50100/tcp, bound to **127.0.0.1 by default** (Phase 7) | Nothing dials it remotely (the orchestrator never connects to workers); operators only |
 | Worker StageExecution (Phase 6, off by default, **unauthenticated**) | 50200/tcp (`execution_listen_port`) | Inbound, from the coordinator only. Bind to the private LAN IP and allow `LocalSubnet` only; see [REMOTE_EXECUTION.md](REMOTE_EXECUTION.md) |
 
 All of these are configurable (never hardcoded) -- see
@@ -20,6 +20,13 @@ All of these are configurable (never hardcoded) -- see
 `worker/worker.example.yaml`.
 
 ## Windows Defender Firewall
+
+> **Phase 7 supersedes the rules below.** Bind every service to loopback
+> or a specific private IP. Open only the two ports a LAN pipeline needs,
+> each limited to the peer's IP (`-RemoteAddress`) on the Private
+> profile: see [DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md), Step 3. Do not
+> open ports on a Public profile. The rules below (no `-RemoteAddress`,
+> port 50100 included) are kept for history and are broader than needed.
 
 ### If all three machines are on a network profile set to "Private"
 
@@ -140,8 +147,11 @@ worker. A worker advertises, in order of precedence:
 Option 3 depends on Windows name resolution (NetBIOS/LLMNR/mDNS)
 working between the three machines, which is often not the case on
 home and lab networks. **For Computers 2 and 3, set `advertise_host`
-to the machine's LAN IP** (`ipconfig` → IPv4 Address) and keep
-`listen_host: "0.0.0.0"`. No address, localhost or otherwise, is
+to the machine's LAN IP** (`ipconfig` → IPv4 Address). *(Phase 7:
+`listen_host` now defaults to `127.0.0.1`, and because the orchestrator
+never dials a worker's Health server, keeping it on loopback is the
+recommended setting; see DEPLOYMENT_LAN.md. The old advice to keep
+`0.0.0.0` exposed Health on every interface.)* No address, localhost or otherwise, is
 hard-coded in code. The `127.0.0.1` values in the example configs are
 local-development placeholders. `test_advertised_address_never_assumes_localhost`
 covers this.

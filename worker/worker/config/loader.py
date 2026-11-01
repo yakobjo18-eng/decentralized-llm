@@ -25,7 +25,11 @@ from dotenv import load_dotenv
 class WorkerConfig:
     worker_id: str
     orchestrator_address: str = "127.0.0.1:9090"
-    listen_host: str = "0.0.0.0"
+    # Health server bind address. Loopback by default (Phase 7): set this
+    # machine's private LAN IP explicitly to serve other machines. Public
+    # IPs and hostnames are refused at startup (config/bind_policy.py);
+    # 0.0.0.0 is allowed with a warning.
+    listen_host: str = "127.0.0.1"
     listen_port: int = 50100
     heartbeat_interval_seconds: float = 5.0
     # Phase 3: how often the worker re-collects and re-sends its FULL
@@ -103,7 +107,7 @@ def load(config_path: Optional[str] = None, env_file: Optional[str] = ".env") ->
     cfg = WorkerConfig(
         worker_id=str(data.get("worker_id") or "") or default_worker_id(),
         orchestrator_address=str(data.get("orchestrator_address", "127.0.0.1:9090")),
-        listen_host=str(data.get("listen_host", "0.0.0.0")),
+        listen_host=str(data.get("listen_host", "127.0.0.1")),
         listen_port=int(data.get("listen_port", 50100)),
         heartbeat_interval_seconds=float(data.get("heartbeat_interval_seconds", 5.0)),
         hardware_refresh_interval_seconds=float(data.get("hardware_refresh_interval_seconds", 300.0)),

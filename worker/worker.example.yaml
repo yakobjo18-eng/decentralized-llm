@@ -11,9 +11,11 @@ worker_id: ""
 # host:port where the orchestrator's WorkerRegistry gRPC service listens.
 orchestrator_address: "127.0.0.1:9090"
 
-# Where this worker's own gRPC server (Health service, and later the
-# tensor-transport service) listens.
-listen_host: "0.0.0.0"
+# Where this worker's Health gRPC server listens. Loopback by default:
+# on a LAN, set this machine's PRIVATE LAN IP explicitly (ipconfig ->
+# IPv4 Address). Public IPs and hostnames are refused; 0.0.0.0 is
+# allowed with a warning (it includes every interface).
+listen_host: "127.0.0.1"
 listen_port: 50100
 
 # Host/IP the orchestrator should use to reach this worker. Leave

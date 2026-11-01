@@ -34,6 +34,11 @@ func main() {
 	}
 	log.Printf("config loaded: rest=%s grpc=%s log_level=%s cors_origin=%q heartbeat_timeout=%.1fs allow_simulated_workers=%t",
 		cfg.RESTAddress, cfg.GRPCAddress, cfg.LogLevel, cfg.CORSOrigin, cfg.HeartbeatTimeoutSeconds, cfg.AllowSimulatedWorkers)
+	for _, addr := range []string{cfg.RESTAddress, cfg.GRPCAddress} {
+		if warning, _ := config.CheckBindAddress(addr); warning != "" {
+			log.Printf("WARNING: %s", warning)
+		}
+	}
 	if cfg.AllowSimulatedWorkers {
 		log.Printf("WARNING: accepting SIMULATED hardware profiles -- they are %s and are labelled as such in every API response",
 			registry.SimulatedNotice)

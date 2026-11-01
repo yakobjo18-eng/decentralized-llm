@@ -49,6 +49,44 @@ STAGE_STATUS_BUSY: StageStatus
 STAGE_STATUS_FAILED: StageStatus
 STAGE_STATUS_DEADLINE_EXCEEDED: StageStatus
 
+class GetInfoRequest(_message.Message):
+    __slots__ = ("protocol_version",)
+    PROTOCOL_VERSION_FIELD_NUMBER: _ClassVar[int]
+    protocol_version: ProtocolVersion
+    def __init__(self, protocol_version: _Optional[_Union[ProtocolVersion, str]] = ...) -> None: ...
+
+class GetInfoResponse(_message.Message):
+    __slots__ = ("protocol_version", "supported_versions", "worker_id", "worker_hostname", "worker_pid", "executable_model_ids", "supported_encodings", "max_tensor_bytes", "max_message_bytes", "max_concurrent", "max_batch", "max_sequence", "min_deadline_seconds", "authenticated")
+    PROTOCOL_VERSION_FIELD_NUMBER: _ClassVar[int]
+    SUPPORTED_VERSIONS_FIELD_NUMBER: _ClassVar[int]
+    WORKER_ID_FIELD_NUMBER: _ClassVar[int]
+    WORKER_HOSTNAME_FIELD_NUMBER: _ClassVar[int]
+    WORKER_PID_FIELD_NUMBER: _ClassVar[int]
+    EXECUTABLE_MODEL_IDS_FIELD_NUMBER: _ClassVar[int]
+    SUPPORTED_ENCODINGS_FIELD_NUMBER: _ClassVar[int]
+    MAX_TENSOR_BYTES_FIELD_NUMBER: _ClassVar[int]
+    MAX_MESSAGE_BYTES_FIELD_NUMBER: _ClassVar[int]
+    MAX_CONCURRENT_FIELD_NUMBER: _ClassVar[int]
+    MAX_BATCH_FIELD_NUMBER: _ClassVar[int]
+    MAX_SEQUENCE_FIELD_NUMBER: _ClassVar[int]
+    MIN_DEADLINE_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    AUTHENTICATED_FIELD_NUMBER: _ClassVar[int]
+    protocol_version: ProtocolVersion
+    supported_versions: _containers.RepeatedScalarFieldContainer[ProtocolVersion]
+    worker_id: str
+    worker_hostname: str
+    worker_pid: int
+    executable_model_ids: _containers.RepeatedScalarFieldContainer[str]
+    supported_encodings: _containers.RepeatedScalarFieldContainer[str]
+    max_tensor_bytes: int
+    max_message_bytes: int
+    max_concurrent: int
+    max_batch: int
+    max_sequence: int
+    min_deadline_seconds: float
+    authenticated: bool
+    def __init__(self, protocol_version: _Optional[_Union[ProtocolVersion, str]] = ..., supported_versions: _Optional[_Iterable[_Union[ProtocolVersion, str]]] = ..., worker_id: _Optional[str] = ..., worker_hostname: _Optional[str] = ..., worker_pid: _Optional[int] = ..., executable_model_ids: _Optional[_Iterable[str]] = ..., supported_encodings: _Optional[_Iterable[str]] = ..., max_tensor_bytes: _Optional[int] = ..., max_message_bytes: _Optional[int] = ..., max_concurrent: _Optional[int] = ..., max_batch: _Optional[int] = ..., max_sequence: _Optional[int] = ..., min_deadline_seconds: _Optional[float] = ..., authenticated: _Optional[bool] = ...) -> None: ...
+
 class TensorPayload(_message.Message):
     __slots__ = ("encoding", "dtype", "shape", "data", "kind", "produced_by_stage", "positions_start")
     ENCODING_FIELD_NUMBER: _ClassVar[int]

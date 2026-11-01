@@ -142,6 +142,9 @@ def execute_plan(
 
     def finish(status: str) -> dict:
         result["status"] = status
+        # Phase 7 test classification: everything here runs in one process.
+        simulated = bool((result["plan"] or {}).get("includes_simulated_workers"))
+        result["test_classification"] = "SIMULATED" if simulated else "REAL_SINGLE_MACHINE"
         result["elapsed"] = {
             "total_seconds": time.perf_counter() - t0,
             "provenance": "MEASURED: wall clock (time.perf_counter) of this one run in this process; not a benchmark",

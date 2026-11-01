@@ -1,0 +1,10 @@
+worker_id: "val-a"
+orchestrator_address: "127.0.0.1:50797"
+listen_host: "127.0.0.1"
+listen_port: 50798
+heartbeat_interval_seconds: 0.5
+backend_compute_test: false
+execution_enabled: true
+execution_listen_host: "127.0.0.1"
+execution_listen_port: 50799
+log_level: "info"

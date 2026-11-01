@@ -1,0 +1,1568 @@
+{
+  "phase7_local_validation_schema_version": 1,
+  "meta": {
+    "started_at": "2026-11-01T12:53:41.124510",
+    "hostname": "YakobsPC",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.3",
+    "orchestrator_exe": "C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\orchestrator\\orchestrator.exe",
+    "rest": "http://127.0.0.1:49670",
+    "grpc_port": 49671,
+    "workers": {
+      "val-a": {
+        "health": 49673,
+        "exec": 49674,
+        "extra": ""
+      },
+      "val-b": {
+        "health": 49680,
+        "exec": 49681,
+        "extra": ""
+      },
+      "val-c": {
+        "health": 49683,
+        "exec": 49684,
+        "extra": "execution_max_batch: 1\n"
+      }
+    },
+    "endpoints": {
+      "val-a": "127.0.0.1:49674",
+      "val-b": "127.0.0.1:49681",
+      "val-c": "127.0.0.1:49684"
+    },
+    "finished_at": "2026-11-01T12:54:31.394188"
+  },
+  "steps": [
+    {
+      "id": "S01",
+      "title": "preflight: runtime and the three worker configs",
+      "classification": "REAL_SINGLE_MACHINE",
+      "status": "PASS",
+      "detail": "{'PASS': 39, 'WARN': 0, 'FAIL': 0, 'SKIP': 3, 'INFO': 11} (worker configs + runtime, before start)",
+      "seconds": 0.213,
+      "evidence": {
+        "report": {
+          "preflight_schema_version": 1,
+          "hostname": "YakobsPC",
+          "counts": {
+            "PASS": 39,
+            "WARN": 0,
+            "FAIL": 0,
+            "SKIP": 3,
+            "INFO": 11
+          },
+          "ok": true,
+          "checks": [
+            {
+              "section": "runtime",
+              "name": "python",
+              "status": "PASS",
+              "detail": "Python 3.13.3 (C:\\Program Files\\Python313\\python.exe)",
+              "hint": "",
+              "tested": "this interpreter",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "PyYAML",
+              "status": "PASS",
+              "detail": "6.0.2 (pinned 6.0.2)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "grpcio",
+              "status": "PASS",
+              "detail": "1.85.0 (pinned 1.85.0)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "grpcio-tools",
+              "status": "PASS",
+              "detail": "1.85.0 (pinned 1.85.0)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "huggingface_hub",
+              "status": "PASS",
+              "detail": "2.2.0 (pinned 2.2.0)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "protobuf",
+              "status": "PASS",
+              "detail": "7.36.2 (pinned 7.36.2)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "psutil",
+              "status": "PASS",
+              "detail": "7.2.2 (pinned 7.2.2)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "pytest",
+              "status": "PASS",
+              "detail": "9.1.1 (pinned 9.1.1)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "python-dotenv",
+              "status": "PASS",
+              "detail": "1.2.4 (pinned 1.2.4)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "safetensors",
+              "status": "PASS",
+              "detail": "0.8.0 (pinned 0.8.0)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "torch",
+              "status": "PASS",
+              "detail": "2.10.0+cu126 (pinned 2.10.0)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "transformers",
+              "status": "PASS",
+              "detail": "5.20.1 (pinned 5.20.1)",
+              "hint": "",
+              "tested": "importlib.metadata",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "numpy",
+              "status": "PASS",
+              "detail": "2.2.4 (needed by the raw-le-c-v1 tensor codec)",
+              "hint": "",
+              "tested": "import",
+              "data": {}
+            },
+            {
+              "section": "runtime",
+              "name": "protocol stubs",
+              "status": "PASS",
+              "detail": "worker.generated.stage_execution_pb2 imports; local protocol version 1",
+              "hint": "",
+              "tested": "import",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "hostname",
+              "status": "INFO",
+              "detail": "YakobsPC",
+              "hint": "",
+              "tested": "socket.gethostname()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 192.168.0.199",
+              "status": "INFO",
+              "detail": "private (Wi-Fi)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 169.254.88.79",
+              "status": "INFO",
+              "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 169.254.15.172",
+              "status": "INFO",
+              "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 127.0.0.1",
+              "status": "INFO",
+              "detail": "loopback (Loopback Pseudo-Interface 1)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "public interface",
+              "status": "PASS",
+              "detail": "no public IPv4 address on any interface",
+              "hint": "",
+              "tested": "interface classification",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "parse",
+              "status": "PASS",
+              "detail": "loaded with the worker's own loader (WORKER_* environment variables and .env applied)",
+              "hint": "",
+              "tested": "worker.config.loader.load",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "worker_id",
+              "status": "PASS",
+              "detail": "'val-a'",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49673 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "listen_host port 49673",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49673)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "execution_listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49674 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "execution_listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "execution_listen_host port 49674",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49674)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "execution_enabled",
+              "status": "PASS",
+              "detail": "true",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-a.yaml",
+              "name": "orchestrator_address",
+              "status": "PASS",
+              "detail": "127.0.0.1:49671 (loopback)",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "parse",
+              "status": "PASS",
+              "detail": "loaded with the worker's own loader (WORKER_* environment variables and .env applied)",
+              "hint": "",
+              "tested": "worker.config.loader.load",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "worker_id",
+              "status": "PASS",
+              "detail": "'val-b'",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49680 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "listen_host port 49680",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49680)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "execution_listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49681 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "execution_listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "execution_listen_host port 49681",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49681)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "execution_enabled",
+              "status": "PASS",
+              "detail": "true",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-b.yaml",
+              "name": "orchestrator_address",
+              "status": "PASS",
+              "detail": "127.0.0.1:49671 (loopback)",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "parse",
+              "status": "PASS",
+              "detail": "loaded with the worker's own loader (WORKER_* environment variables and .env applied)",
+              "hint": "",
+              "tested": "worker.config.loader.load",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "worker_id",
+              "status": "PASS",
+              "detail": "'val-c'",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49683 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "listen_host port 49683",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49683)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "execution_listen_host",
+              "status": "INFO",
+              "detail": "127.0.0.1:49684 is loopback: reachable from THIS machine only",
+              "hint": "",
+              "tested": "bind policy",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "execution_listen_host ownership",
+              "status": "PASS",
+              "detail": "127.0.0.1 belongs to this machine",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 0)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "execution_listen_host port 49684",
+              "status": "PASS",
+              "detail": "free",
+              "hint": "",
+              "tested": "bind(127.0.0.1, 49684)",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "execution_enabled",
+              "status": "PASS",
+              "detail": "true",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "worker config C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\val-c.yaml",
+              "name": "orchestrator_address",
+              "status": "PASS",
+              "detail": "127.0.0.1:49671 (loopback)",
+              "hint": "",
+              "tested": "config value",
+              "data": {}
+            },
+            {
+              "section": "orchestrator",
+              "name": "reachability",
+              "status": "SKIP",
+              "detail": "not tested: no --orchestrator given",
+              "hint": "",
+              "tested": "",
+              "data": {}
+            },
+            {
+              "section": "endpoints",
+              "name": "reachability",
+              "status": "SKIP",
+              "detail": "not tested: no --endpoint given; no worker endpoint was contacted",
+              "hint": "",
+              "tested": "",
+              "data": {}
+            },
+            {
+              "section": "plan",
+              "name": "validity",
+              "status": "SKIP",
+              "detail": "not tested: no --plan given",
+              "hint": "",
+              "tested": "",
+              "data": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S02",
+      "title": "start orchestrator + 3 worker.main processes (execution enabled, loopback)",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "orchestrator healthy in 0.10s; workers ready (StageExecution listening) in val-a 9.7s, val-c 9.7s, val-b 9.7s; all online+REAL",
+      "seconds": 10.609,
+      "evidence": {
+        "worker_start_seconds": {
+          "val-a": 9.7,
+          "val-c": 9.71,
+          "val-b": 9.71
+        },
+        "registration_wait_seconds": 0.7820661067962646,
+        "registered": {
+          "val-a": {
+            "address": "127.0.0.1:49673",
+            "hostname": "YakobsPC",
+            "profile_source": "REAL",
+            "online": true
+          },
+          "val-b": {
+            "address": "127.0.0.1:49680",
+            "hostname": "YakobsPC",
+            "profile_source": "REAL",
+            "online": true
+          },
+          "val-c": {
+            "address": "127.0.0.1:49683",
+            "hostname": "YakobsPC",
+            "profile_source": "REAL",
+            "online": true
+          }
+        }
+      }
+    },
+    {
+      "id": "S03",
+      "title": "listener exposure audit (psutil, actual bound addresses)",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "8 listening sockets, all on 127.0.0.1",
+      "seconds": 0.002,
+      "evidence": {
+        "listeners": [
+          {
+            "process": "orchestrator",
+            "pid": 39964,
+            "address": "127.0.0.1:49670"
+          },
+          {
+            "process": "orchestrator",
+            "pid": 39964,
+            "address": "127.0.0.1:49671"
+          },
+          {
+            "process": "val-a",
+            "pid": 21284,
+            "address": "127.0.0.1:49674"
+          },
+          {
+            "process": "val-a",
+            "pid": 21284,
+            "address": "127.0.0.1:49673"
+          },
+          {
+            "process": "val-b",
+            "pid": 40144,
+            "address": "127.0.0.1:49681"
+          },
+          {
+            "process": "val-b",
+            "pid": 40144,
+            "address": "127.0.0.1:49680"
+          },
+          {
+            "process": "val-c",
+            "pid": 19028,
+            "address": "127.0.0.1:49683"
+          },
+          {
+            "process": "val-c",
+            "pid": 19028,
+            "address": "127.0.0.1:49684"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S04",
+      "title": "plan from live orchestrator registrations",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "waited 4.1s for backend probes; INFEASIBLE from live registrations: The whole model on one worker needs 700.40 MiB; the largest effective capacity is 51.81 MiB (val-b); all usable workers together have 71.63 MiB.; Unit block.3 alone needs 700.20 MiB (including the per-worker runtime overhead), more than any worker can hold.; Every stage also pays a 700.00 MiB runtim -- pipelines below use these REAL records with a SYNTHETIC 3 GiB usable capacity, for planning only",
+      "seconds": 11.201,
+      "evidence": {
+        "feasible": false,
+        "reasons": [
+          "The whole model on one worker needs 700.40 MiB; the largest effective capacity is 51.81 MiB (val-b); all usable workers together have 71.63 MiB.",
+          "Unit block.3 alone needs 700.20 MiB (including the per-worker runtime overhead), more than any worker can hold.",
+          "Every stage also pays a 700.00 MiB runtime overhead, so adding workers adds memory as well as capacity.",
+          "Options: shorter context_length/prompt_length, logits_positions='last', fp16/bf16 weights, or more/larger workers."
+        ],
+        "usable_ram": {
+          "val-a": 46180762,
+          "val-b": 120723866,
+          "val-c": 94808474
+        },
+        "backend_probe_wait_seconds": 4.15
+      }
+    },
+    {
+      "id": "S05",
+      "title": "preflight: live orchestrator + endpoints + 2-stage plan",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "{'PASS': 16, 'WARN': 1, 'FAIL': 0, 'SKIP': 0, 'INFO': 9}",
+      "seconds": 0.143,
+      "evidence": {
+        "report": {
+          "preflight_schema_version": 1,
+          "hostname": "YakobsPC",
+          "counts": {
+            "PASS": 16,
+            "WARN": 1,
+            "FAIL": 0,
+            "SKIP": 0,
+            "INFO": 9
+          },
+          "ok": true,
+          "checks": [
+            {
+              "section": "this machine",
+              "name": "hostname",
+              "status": "INFO",
+              "detail": "YakobsPC",
+              "hint": "",
+              "tested": "socket.gethostname()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 192.168.0.199",
+              "status": "INFO",
+              "detail": "private (Wi-Fi)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 169.254.88.79",
+              "status": "INFO",
+              "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 3)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 169.254.15.172",
+              "status": "INFO",
+              "detail": "link-local (APIPA: no DHCP lease; not a usable LAN address) (Local Area Connection* 4)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "IPv4 127.0.0.1",
+              "status": "INFO",
+              "detail": "loopback (Loopback Pseudo-Interface 1)",
+              "hint": "",
+              "tested": "psutil.net_if_addrs()",
+              "data": {}
+            },
+            {
+              "section": "this machine",
+              "name": "public interface",
+              "status": "PASS",
+              "detail": "no public IPv4 address on any interface",
+              "hint": "",
+              "tested": "interface classification",
+              "data": {}
+            },
+            {
+              "section": "orchestrator http://127.0.0.1:49670",
+              "name": "REST reachable",
+              "status": "PASS",
+              "detail": "TCP connect to 127.0.0.1:49670 succeeded",
+              "hint": "",
+              "tested": "DNS + TCP connect 127.0.0.1:49670",
+              "data": {}
+            },
+            {
+              "section": "orchestrator http://127.0.0.1:49670",
+              "name": "health",
+              "status": "PASS",
+              "detail": "{\"status\": \"ok\", \"uptime_seconds\": 21.8387598, \"registered_workers\": 3, \"online_workers\": 3, \"online_real_workers\": 3, \"online_simulated_workers\": 0, \"online_unknown_source_workers\": 0}",
+              "hint": "",
+              "tested": "GET /health",
+              "data": {}
+            },
+            {
+              "section": "orchestrator http://127.0.0.1:49670",
+              "name": "registered workers",
+              "status": "INFO",
+              "detail": "val-a (online, REAL, host YakobsPC, addr 127.0.0.1:49673), val-b (online, REAL, host YakobsPC, addr 127.0.0.1:49680), val-c (online, REAL, host YakobsPC, addr 127.0.0.1:49683)",
+              "hint": "",
+              "tested": "GET /api/workers",
+              "data": {}
+            },
+            {
+              "section": "orchestrator http://127.0.0.1:49670",
+              "name": "worker val-b",
+              "status": "PASS",
+              "detail": "online, REAL, host YakobsPC, heartbeat 0.2s ago",
+              "hint": "",
+              "tested": "GET /api/workers",
+              "data": {}
+            },
+            {
+              "section": "orchestrator http://127.0.0.1:49670",
+              "name": "worker val-a",
+              "status": "PASS",
+              "detail": "online, REAL, host YakobsPC, heartbeat 0.2s ago",
+              "hint": "",
+              "tested": "GET /api/workers",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-a=127.0.0.1:49674",
+              "name": "TCP reachable",
+              "status": "PASS",
+              "detail": "TCP connect to 127.0.0.1:49674 succeeded",
+              "hint": "",
+              "tested": "DNS + TCP connect 127.0.0.1:49674 (1 ms)",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-a=127.0.0.1:49674",
+              "name": "protocol",
+              "status": "PASS",
+              "detail": "worker speaks [1], coordinator speaks 1",
+              "hint": "",
+              "tested": "gRPC GetInfo",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-a=127.0.0.1:49674",
+              "name": "identity",
+              "status": "PASS",
+              "detail": "answers as 'val-a' on host 'YakobsPC' (pid 21284); self-reported, unauthenticated",
+              "hint": "",
+              "tested": "GetInfo worker_id",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-a=127.0.0.1:49674",
+              "name": "worker limits",
+              "status": "INFO",
+              "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+              "hint": "",
+              "tested": "GetInfo",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-b=127.0.0.1:49681",
+              "name": "TCP reachable",
+              "status": "PASS",
+              "detail": "TCP connect to 127.0.0.1:49681 succeeded",
+              "hint": "",
+              "tested": "DNS + TCP connect 127.0.0.1:49681 (0 ms)",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-b=127.0.0.1:49681",
+              "name": "protocol",
+              "status": "PASS",
+              "detail": "worker speaks [1], coordinator speaks 1",
+              "hint": "",
+              "tested": "gRPC GetInfo",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-b=127.0.0.1:49681",
+              "name": "identity",
+              "status": "PASS",
+              "detail": "answers as 'val-b' on host 'YakobsPC' (pid 40144); self-reported, unauthenticated",
+              "hint": "",
+              "tested": "GetInfo worker_id",
+              "data": {}
+            },
+            {
+              "section": "endpoint val-b=127.0.0.1:49681",
+              "name": "worker limits",
+              "status": "INFO",
+              "detail": "models ['builtin:tiny-gpt2-v1'], max tensor 16777216 B, max message 33554432 B, max batch 8, max sequence model max, max concurrent 2, authenticated False",
+              "hint": "",
+              "tested": "GetInfo",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "validity",
+              "status": "PASS",
+              "detail": "plan 53afc8f3f7508ada... for builtin:tiny-gpt2-v1, 2 stage(s); fingerprint, model, precision, ranges and memory recomputation all pass",
+              "hint": "",
+              "tested": "Phase 5 loader, remote mode",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "capacity vs. live orchestrator",
+              "status": "WARN",
+              "detail": "stage 0: stated host capacity 1449551462 exceeds the worker's usable RAM 0; stage 1: stated host capacity 1449551462 exceeds the worker's usable RAM 0",
+              "hint": "Worker resources changed since planning; re-plan from the live orchestrator.",
+              "tested": "validate_plan with live orchestrator records",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "stage 0 -> val-b",
+              "status": "PASS",
+              "detail": "units [0, 3], host 'YakobsPC', endpoint 127.0.0.1:49681: assignment consistent",
+              "hint": "",
+              "tested": "plan vs. GetInfo vs. orchestrator",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "stage 1 -> val-a",
+              "status": "PASS",
+              "detail": "units [3, 7], host 'YakobsPC', endpoint 127.0.0.1:49674: assignment consistent",
+              "hint": "",
+              "tested": "plan vs. GetInfo vs. orchestrator",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "hosts spanned",
+              "status": "INFO",
+              "detail": "1 host(s): ['YakobsPC']",
+              "hint": "",
+              "tested": "plan stage hostnames",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "limits stage 0",
+              "status": "PASS",
+              "detail": "batch 2 x 32 tokens: input 512 B, output 8192 B, request ~13829 B -- within limits",
+              "hint": "",
+              "tested": "planned workload vs. coordinator defaults and worker GetInfo limits",
+              "data": {}
+            },
+            {
+              "section": "plan C:\\Users\\Yakob\\OneDrive\\Documents\\Programs\\decentralized llm\\docs\\validation\\phase7-local-2026-11-01\\work\\plan2.json",
+              "name": "limits stage 1",
+              "status": "PASS",
+              "detail": "batch 2 x 32 tokens: input 8192 B, output 32768 B, request ~21509 B -- within limits",
+              "hint": "",
+              "tested": "planned workload vs. coordinator defaults and worker GetInfo limits",
+              "data": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "S06",
+      "title": "2-worker remote pipeline",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "succeeded, output [2, 8, 128], next tokens [60, 96], reference diff 0.0, 2 processes on ['YakobsPC'], total 0.234s",
+      "seconds": 0.234,
+      "evidence": {
+        "status": "succeeded",
+        "test_classification": "REAL_MULTI_PROCESS",
+        "distinct_worker_processes": 2,
+        "distinct_worker_hostnames": [
+          "YakobsPC"
+        ],
+        "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+        "model_id": "builtin:tiny-gpt2-v1",
+        "output_shape": [
+          2,
+          8,
+          128
+        ],
+        "next_token_ids": [
+          60,
+          96
+        ],
+        "reference_check": {
+          "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+          "max_abs_diff": 0.0,
+          "atol": 0.0001,
+          "passed": true
+        },
+        "elapsed_seconds": 0.23378869995940477,
+        "stages": [
+          {
+            "stage": 0,
+            "worker_id": "val-b",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 40144
+            },
+            "units": [
+              0,
+              3
+            ],
+            "round_trip_seconds": 0.015273199998773634,
+            "worker_timing": {
+              "validate_seconds": 0.00814879999961704,
+              "compute_seconds": 0.002180999959819019,
+              "total_seconds": 0.010951299918815494
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          },
+          {
+            "stage": 1,
+            "worker_id": "val-a",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 21284
+            },
+            "units": [
+              3,
+              7
+            ],
+            "round_trip_seconds": 0.018310799961909652,
+            "worker_timing": {
+              "validate_seconds": 0.010914000100456178,
+              "compute_seconds": 0.002407899941317737,
+              "total_seconds": 0.013988599996082485
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "S07",
+      "title": "3-worker remote pipeline",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "succeeded, output [1, 8, 128], next tokens [60], reference diff 0.0, 3 processes on ['YakobsPC'], total 0.251s",
+      "seconds": 0.251,
+      "evidence": {
+        "status": "succeeded",
+        "test_classification": "REAL_MULTI_PROCESS",
+        "distinct_worker_processes": 3,
+        "distinct_worker_hostnames": [
+          "YakobsPC"
+        ],
+        "plan_id": "d4e6f84baf2b089c24a122868a52acccfd25e752895b6a8a68026e592a23927c",
+        "model_id": "builtin:tiny-gpt2-v1",
+        "output_shape": [
+          1,
+          8,
+          128
+        ],
+        "next_token_ids": [
+          60
+        ],
+        "reference_check": {
+          "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+          "max_abs_diff": 0.0,
+          "atol": 0.0001,
+          "passed": true
+        },
+        "elapsed_seconds": 0.2512188999680802,
+        "stages": [
+          {
+            "stage": 0,
+            "worker_id": "val-c",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 19028
+            },
+            "units": [
+              0,
+              2
+            ],
+            "round_trip_seconds": 0.02050710003823042,
+            "worker_timing": {
+              "validate_seconds": 0.007989300065673888,
+              "compute_seconds": 0.0020467001013457775,
+              "total_seconds": 0.01190619997214526
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          },
+          {
+            "stage": 1,
+            "worker_id": "val-a",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 21284
+            },
+            "units": [
+              2,
+              4
+            ],
+            "round_trip_seconds": 0.014277499984018505,
+            "worker_timing": {
+              "validate_seconds": 0.007059600087814033,
+              "compute_seconds": 0.0016650999896228313,
+              "total_seconds": 0.009239100036211312
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          },
+          {
+            "stage": 2,
+            "worker_id": "val-b",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 40144
+            },
+            "units": [
+              4,
+              7
+            ],
+            "round_trip_seconds": 0.012936400016769767,
+            "worker_timing": {
+              "validate_seconds": 0.0059507000260055065,
+              "compute_seconds": 0.0011250999523326755,
+              "total_seconds": 0.007653499953448772
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "S08",
+      "title": "resource-limit failure (val-c max_batch 1, request batch 2)",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "failed at stage 0: LIMIT_EXCEEDED: ['batch 2 > worker limit 1']",
+      "seconds": 0.215,
+      "evidence": {
+        "status": "failed",
+        "test_classification": null,
+        "distinct_worker_processes": 0,
+        "distinct_worker_hostnames": [],
+        "plan_id": "814598f602b85be42271aa695f0e19954de574e87235f5211ba606f2bdadcf52",
+        "model_id": "builtin:tiny-gpt2-v1",
+        "output_shape": null,
+        "next_token_ids": null,
+        "reference_check": null,
+        "elapsed_seconds": 0.016481099999509752,
+        "stages": [],
+        "error": {
+          "phase": "dispatch",
+          "code": "LIMIT_EXCEEDED",
+          "type": "RemoteStageError",
+          "message": "request exceeds a resource limit",
+          "stage_index": 0,
+          "executed": false,
+          "problems": [
+            "batch 2 > worker limit 1"
+          ],
+          "attempts": [
+            "STAGE_STATUS_REJECTED"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S09",
+      "title": "malformed requests against a live worker process",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "FAIL",
+      "detail": "protocol_version 0 -> PROTOCOL_VERSION, missing plan_json -> MALFORMED_REQUEST, corrupt tensor bytes -> UNASSIGNED_STAGE, unassigned stage (stage 1 sent to val-a) -> INVALID_TENSOR, no deadline -> DEADLINE; worker still serves afterwards: True",
+      "seconds": 0.25,
+      "evidence": {
+        "cases": {
+          "protocol_version 0": {
+            "status": "STAGE_STATUS_REJECTED",
+            "code": "PROTOCOL_VERSION",
+            "message": "protocol_version 0 is not supported (this worker speaks 1)",
+            "executed": false
+          },
+          "missing plan_json": {
+            "status": "STAGE_STATUS_REJECTED",
+            "code": "MALFORMED_REQUEST",
+            "message": "malformed request",
+            "executed": false
+          },
+          "corrupt tensor bytes": {
+            "status": "STAGE_STATUS_REJECTED",
+            "code": "UNASSIGNED_STAGE",
+            "message": "stage 0 is assigned to worker 'val-b', not to this worker 'val-a'",
+            "executed": false
+          },
+          "unassigned stage (stage 1 sent to val-a)": {
+            "status": "STAGE_STATUS_REJECTED",
+            "code": "INVALID_TENSOR",
+            "message": "input tensor rejected",
+            "executed": false
+          },
+          "no deadline": {
+            "status": "STAGE_STATUS_REJECTED",
+            "code": "DEADLINE",
+            "message": "the request has no deadline; a deadline is required",
+            "executed": false
+          }
+        },
+        "pb_ok": true
+      }
+    },
+    {
+      "id": "S10",
+      "title": "request deadline (20 ms stage timeout)",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "failed: DEADLINE (only 0.020s left before the deadline (< 0.05s minimum)); attempts ['STAGE_STATUS_REJECTED'] -- not retried",
+      "seconds": 0.217,
+      "evidence": {
+        "status": "failed",
+        "test_classification": null,
+        "distinct_worker_processes": 0,
+        "distinct_worker_hostnames": [],
+        "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+        "model_id": "builtin:tiny-gpt2-v1",
+        "output_shape": null,
+        "next_token_ids": null,
+        "reference_check": null,
+        "elapsed_seconds": 0.01670789998024702,
+        "stages": [],
+        "error": {
+          "phase": "dispatch",
+          "code": "DEADLINE",
+          "type": "RemoteStageError",
+          "message": "only 0.020s left before the deadline (< 0.05s minimum)",
+          "stage_index": 0,
+          "executed": false,
+          "problems": [],
+          "attempts": [
+            "STAGE_STATUS_REJECTED"
+          ]
+        }
+      }
+    },
+    {
+      "id": "S11",
+      "title": "graceful worker stop (CTRL_BREAK) and restart",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "exit code 0, 'worker shutdown complete' logged: True, deregistered in 0.0s; while down: failed RETRIES_EXHAUSTED at stage 0 (executed False); restarted+online in 8.0s; after: succeeded, pid 40144 -> 21284",
+      "seconds": 11.315,
+      "evidence": {
+        "down": {
+          "status": "failed",
+          "test_classification": null,
+          "distinct_worker_processes": 0,
+          "distinct_worker_hostnames": [],
+          "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+          "model_id": "builtin:tiny-gpt2-v1",
+          "output_shape": null,
+          "next_token_ids": null,
+          "reference_check": null,
+          "elapsed_seconds": 2.1285139999818057,
+          "stages": [],
+          "error": {
+            "phase": "dispatch",
+            "code": "RETRIES_EXHAUSTED",
+            "type": "RemoteStageError",
+            "message": "not executed after 2 attempts (last: unreachable)",
+            "stage_index": 0,
+            "executed": false,
+            "problems": [],
+            "attempts": [
+              "unreachable",
+              "unreachable"
+            ]
+          }
+        },
+        "up": {
+          "status": "succeeded",
+          "test_classification": "REAL_MULTI_PROCESS",
+          "distinct_worker_processes": 2,
+          "distinct_worker_hostnames": [
+            "YakobsPC"
+          ],
+          "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+          "model_id": "builtin:tiny-gpt2-v1",
+          "output_shape": [
+            2,
+            8,
+            128
+          ],
+          "next_token_ids": [
+            60,
+            96
+          ],
+          "reference_check": {
+            "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "passed": true
+          },
+          "elapsed_seconds": 0.23664229991845787,
+          "stages": [
+            {
+              "stage": 0,
+              "worker_id": "val-b",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 45484
+              },
+              "units": [
+                0,
+                3
+              ],
+              "round_trip_seconds": 0.019225799944251776,
+              "worker_timing": {
+                "validate_seconds": 0.008804300101473927,
+                "compute_seconds": 0.002329500042833388,
+                "total_seconds": 0.012774899951182306
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            },
+            {
+              "stage": 1,
+              "worker_id": "val-a",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 21284
+              },
+              "units": [
+                3,
+                7
+              ],
+              "round_trip_seconds": 0.008571399957872927,
+              "worker_timing": {
+                "validate_seconds": 0.001952200080268085,
+                "compute_seconds": 0.0016804999904707074,
+                "total_seconds": 0.004225800046697259
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            }
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "S12",
+      "title": "hard kill of a worker, offline detection, restart",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "killed; orchestrator marked it offline after 2.6s (heartbeat timeout 3s); restarted, online after 0.8s; pipeline succeeded",
+      "seconds": 11.126,
+      "evidence": {
+        "status": "succeeded",
+        "test_classification": "REAL_MULTI_PROCESS",
+        "distinct_worker_processes": 2,
+        "distinct_worker_hostnames": [
+          "YakobsPC"
+        ],
+        "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+        "model_id": "builtin:tiny-gpt2-v1",
+        "output_shape": [
+          2,
+          8,
+          128
+        ],
+        "next_token_ids": [
+          60,
+          96
+        ],
+        "reference_check": {
+          "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+          "max_abs_diff": 0.0,
+          "atol": 0.0001,
+          "passed": true
+        },
+        "elapsed_seconds": 0.23274479992687702,
+        "stages": [
+          {
+            "stage": 0,
+            "worker_id": "val-b",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 45128
+            },
+            "units": [
+              0,
+              3
+            ],
+            "round_trip_seconds": 0.021073699928820133,
+            "worker_timing": {
+              "validate_seconds": 0.010598700027912855,
+              "compute_seconds": 0.0025958999758586287,
+              "total_seconds": 0.015127299935556948
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          },
+          {
+            "stage": 1,
+            "worker_id": "val-a",
+            "worker_reported": {
+              "hostname": "YakobsPC",
+              "pid": 21284
+            },
+            "units": [
+              3,
+              7
+            ],
+            "round_trip_seconds": 0.010268100071698427,
+            "worker_timing": {
+              "validate_seconds": 0.0022511000279337168,
+              "compute_seconds": 0.002250799909234047,
+              "total_seconds": 0.005188999930396676
+            },
+            "attempts": [
+              "STAGE_STATUS_OK"
+            ]
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "id": "S13",
+      "title": "orchestrator restart: execution while down, worker re-registration",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "pipeline while the orchestrator was DOWN: succeeded (execution does not depend on it); after restart all 3 workers re-registered within 1.1s (logged: {'val-a': True, 'val-b': True, 'val-c': True}); pipeline succeeded",
+      "seconds": 1.515,
+      "evidence": {
+        "during": {
+          "status": "succeeded",
+          "test_classification": "REAL_MULTI_PROCESS",
+          "distinct_worker_processes": 2,
+          "distinct_worker_hostnames": [
+            "YakobsPC"
+          ],
+          "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+          "model_id": "builtin:tiny-gpt2-v1",
+          "output_shape": [
+            2,
+            8,
+            128
+          ],
+          "next_token_ids": [
+            60,
+            96
+          ],
+          "reference_check": {
+            "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "passed": true
+          },
+          "elapsed_seconds": 0.22729439998511225,
+          "stages": [
+            {
+              "stage": 0,
+              "worker_id": "val-b",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 45128
+              },
+              "units": [
+                0,
+                3
+              ],
+              "round_trip_seconds": 0.01207359996624291,
+              "worker_timing": {
+                "validate_seconds": 0.0015761000104248524,
+                "compute_seconds": 0.0013579000951722264,
+                "total_seconds": 0.0033731000730767846
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            },
+            {
+              "stage": 1,
+              "worker_id": "val-a",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 21284
+              },
+              "units": [
+                3,
+                7
+              ],
+              "round_trip_seconds": 0.008205499965697527,
+              "worker_timing": {
+                "validate_seconds": 0.0019597000209614635,
+                "compute_seconds": 0.0016317999688908458,
+                "total_seconds": 0.0041056000627577305
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            }
+          ],
+          "error": null
+        },
+        "after": {
+          "status": "succeeded",
+          "test_classification": "REAL_MULTI_PROCESS",
+          "distinct_worker_processes": 2,
+          "distinct_worker_hostnames": [
+            "YakobsPC"
+          ],
+          "plan_id": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6",
+          "model_id": "builtin:tiny-gpt2-v1",
+          "output_shape": [
+            2,
+            8,
+            128
+          ],
+          "next_token_ids": [
+            60,
+            96
+          ],
+          "reference_check": {
+            "compared_to": "Phase 5 unpartitioned local reference forward pass on the coordinator",
+            "max_abs_diff": 0.0,
+            "atol": 0.0001,
+            "passed": true
+          },
+          "elapsed_seconds": 0.22772590001113713,
+          "stages": [
+            {
+              "stage": 0,
+              "worker_id": "val-b",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 45128
+              },
+              "units": [
+                0,
+                3
+              ],
+              "round_trip_seconds": 0.009097900008782744,
+              "worker_timing": {
+                "validate_seconds": 0.001398300053551793,
+                "compute_seconds": 0.0013609000016003847,
+                "total_seconds": 0.0032577000092715025
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            },
+            {
+              "stage": 1,
+              "worker_id": "val-a",
+              "worker_reported": {
+                "hostname": "YakobsPC",
+                "pid": 21284
+              },
+              "units": [
+                3,
+                7
+              ],
+              "round_trip_seconds": 0.009197300067171454,
+              "worker_timing": {
+                "validate_seconds": 0.002217500004917383,
+                "compute_seconds": 0.0018505000043660402,
+                "total_seconds": 0.004581199958920479
+              },
+              "attempts": [
+                "STAGE_STATUS_OK"
+              ]
+            }
+          ],
+          "error": null
+        }
+      }
+    },
+    {
+      "id": "S15",
+      "title": "clean shutdown of all workers (deregistration)",
+      "classification": "REAL_MULTI_PROCESS",
+      "status": "PASS",
+      "detail": "{'val-a': {'exit_code': 0, 'clean': True}, 'val-b': {'exit_code': 0, 'clean': True}, 'val-c': {'exit_code': 0, 'clean': True}}; orchestrator lists no workers after 0.0s",
+      "seconds": 2.903,
+      "evidence": {
+        "val-a": {
+          "exit_code": 0,
+          "clean": true
+        },
+        "val-b": {
+          "exit_code": 0,
+          "clean": true
+        },
+        "val-c": {
+          "exit_code": 0,
+          "clean": true
+        }
+      }
+    }
+  ],
+  "summary": {
+    "passed": 13,
+    "failed": 1,
+    "classifications": [
+      "REAL_MULTI_PROCESS",
+      "REAL_SINGLE_MACHINE"
+    ]
+  },
+  "notes": [
+    "All steps ran on ONE computer; no step is REAL_MULTI_MACHINE.",
+    "Timings are single-run wall clock on a loaded laptop, not benchmarks."
+  ]
+}

@@ -113,3 +113,54 @@ def refingerprint(plan: dict) -> dict:
 
     plan["inputs_fingerprint"] = plan_mod.fingerprint(plan)
     return plan
+
+
+# ---- Phase 7 test classification (tests/classification.py) -------------
+
+from classification import classify as _classify, record as _record, register as _register, summarize as _summarize  # noqa: E402
+
+MODULES = {
+    "test_cli": "SIMULATED",                 # simulated worker profiles
+    "test_execution_cli": "SIMULATED",       # simulated profiles / synthetic REAL-labelled records
+    "test_execution_model": "REAL_SINGLE_MACHINE",
+    "test_execution_plans": "SIMULATED",
+    "test_execution_runner": "SIMULATED",
+    "test_inspection": "REAL_SINGLE_MACHINE",
+    "test_memory": "REAL_SINGLE_MACHINE",
+    "test_optimizer": "REAL_SINGLE_MACHINE",  # algorithm vs. brute force; no hardware claim
+    "test_planning": "SIMULATED",
+    "test_validate": "SIMULATED",
+    "test_workers": "SIMULATED",
+    "test_remote_wire": "REAL_SINGLE_MACHINE",
+    "test_remote_service": "REAL_SINGLE_MACHINE",   # real servicer over in-process gRPC
+    "test_remote_execution": "REAL_SINGLE_MACHINE",  # Part A; Part B overridden below
+    "test_remote_worker_main": "REAL_MULTI_PROCESS",
+    "test_preflight": "REAL_SINGLE_MACHINE",
+}
+OVERRIDES = {
+    "test_workers::test_parity_with_live_orchestrator": "REAL_MULTI_PROCESS",
+    "test_workers::test_local_machine_is_real_and_conservative": "REAL_SINGLE_MACHINE",
+    "test_workers::test_margins_match_phase3_defaults": "REAL_SINGLE_MACHINE",
+    "test_remote_execution::test_two_worker_processes_over_grpc": "REAL_MULTI_PROCESS",
+    "test_remote_execution::test_three_worker_processes_over_grpc": "REAL_MULTI_PROCESS",
+    "test_remote_execution::test_cli_against_worker_processes": "REAL_MULTI_PROCESS",
+    "test_remote_execution::test_killed_worker_process_fails_its_stage_cleanly": "REAL_MULTI_PROCESS",
+    "test_preflight::test_orchestrator_checks_against_a_stand_in_server": "SIMULATED",
+    "test_preflight::test_preflight_against_a_live_orchestrator_and_worker_processes": "REAL_MULTI_PROCESS",
+}
+
+
+def pytest_configure(config):
+    _register(config)
+
+
+def pytest_collection_modifyitems(config, items):
+    _classify(items, MODULES, OVERRIDES)
+
+
+def pytest_runtest_logreport(report):
+    _record(report)
+
+
+def pytest_terminal_summary(terminalreporter):
+    _summarize(terminalreporter)

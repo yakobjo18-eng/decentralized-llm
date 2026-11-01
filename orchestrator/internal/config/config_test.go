@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"orchestrator/internal/capability"
@@ -146,5 +147,43 @@ func TestLoad_AllowSimulatedEnvOverride(t *testing.T) {
 	}
 	if !cfg.AllowSimulatedWorkers {
 		t.Error("env override not applied")
+	}
+}
+
+func TestDefaultsAreLoopback(t *testing.T) {
+	cfg := Default()
+	if cfg.RESTAddress != "127.0.0.1:8080" || cfg.GRPCAddress != "127.0.0.1:9090" {
+		t.Fatalf("defaults must be loopback, got rest=%q grpc=%q", cfg.RESTAddress, cfg.GRPCAddress)
+	}
+}
+
+func TestCheckBindAddress(t *testing.T) {
+	allowed := []string{"127.0.0.1:8080", "localhost:8080", "[::1]:9090", "192.168.1.10:9090", "10.0.0.5:7000",
+		"172.16.4.2:8080", "169.254.1.1:8080", "[fd00::1]:9090"}
+	for _, addr := range allowed {
+		if w, err := CheckBindAddress(addr); err != nil || w != "" {
+			t.Errorf("%s: want allowed without warning, got warning=%q err=%v", addr, w, err)
+		}
+	}
+	for _, addr := range []string{"0.0.0.0:8080", "[::]:9090", ":8080"} {
+		if w, err := CheckBindAddress(addr); err != nil || w == "" {
+			t.Errorf("%s: want allowed WITH a warning, got warning=%q err=%v", addr, w, err)
+		}
+	}
+	for _, addr := range []string{"8.8.8.8:8080", "1.1.1.1:9090", "[2001:4860::1]:9090", "my-host.example.com:8080",
+		"127.0.0.1", "127.0.0.1:99999"} {
+		if _, err := CheckBindAddress(addr); err == nil {
+			t.Errorf("%s: want refused", addr)
+		}
+	}
+}
+
+func TestLoadRefusesPublicBindAddress(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "o.yaml")
+	if err := os.WriteFile(path, []byte("grpc_address: \"8.8.8.8:9090\"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(path); err == nil || !strings.Contains(err.Error(), "public address") {
+		t.Fatalf("want a public-address error, got %v", err)
 	}
 }

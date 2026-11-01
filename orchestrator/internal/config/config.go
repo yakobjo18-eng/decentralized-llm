@@ -5,6 +5,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 
@@ -15,9 +16,13 @@ import (
 
 // Config holds the orchestrator's runtime settings.
 type Config struct {
-	// RESTAddress is where the dashboard-facing HTTP API listens, e.g. "0.0.0.0:8080".
+	// RESTAddress is where the dashboard-facing HTTP API listens.
+	// Loopback by default (Phase 7); set a private LAN IP explicitly to
+	// serve other machines. See CheckBindAddress.
 	RESTAddress string `yaml:"rest_address"`
-	// GRPCAddress is where the WorkerRegistry gRPC service listens, e.g. "0.0.0.0:9090".
+	// GRPCAddress is where the WorkerRegistry gRPC service listens.
+	// Loopback by default (Phase 7); workers on other machines need it
+	// set to this machine's private LAN IP.
 	GRPCAddress string `yaml:"grpc_address"`
 	// LogLevel controls log verbosity ("debug", "info", "warn", "error").
 	LogLevel string `yaml:"log_level"`
@@ -44,8 +49,8 @@ type Config struct {
 // environment overrides are set. Safe for local, single-machine use.
 func Default() Config {
 	return Config{
-		RESTAddress:             "0.0.0.0:8080",
-		GRPCAddress:             "0.0.0.0:9090",
+		RESTAddress:             "127.0.0.1:8080",
+		GRPCAddress:             "127.0.0.1:9090",
 		LogLevel:                "info",
 		CORSOrigin:              "http://localhost:3000",
 		HeartbeatTimeoutSeconds: 15,
@@ -78,7 +83,51 @@ func Load(path string) (Config, error) {
 	if err := cfg.Capability.Validate(); err != nil {
 		return Config{}, err
 	}
+	for name, addr := range map[string]string{"rest_address": cfg.RESTAddress, "grpc_address": cfg.GRPCAddress} {
+		if _, err := CheckBindAddress(addr); err != nil {
+			return Config{}, fmt.Errorf("%s: %w", name, err)
+		}
+	}
 	return cfg, nil
+}
+
+// CheckBindAddress applies the project's bind policy (the same one the
+// worker's services use, worker/execution/server.py) to a "host:port"
+// listen address. Neither orchestrator service is authenticated, so:
+//   - loopback ("localhost", 127.0.0.0/8, ::1) and private or link-local
+//     IPs are allowed;
+//   - an unspecified host ("0.0.0.0", "::", or empty as in ":8080")
+//     listens on EVERY interface, public ones included: allowed, but a
+//     warning is returned for the caller to log;
+//   - public (globally routable) IPs and other hostnames are refused.
+func CheckBindAddress(addr string) (warning string, err error) {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return "", fmt.Errorf("listen address %q must be host:port: %w", addr, err)
+	}
+	if p, perr := strconv.Atoi(port); perr != nil || p < 0 || p > 65535 {
+		return "", fmt.Errorf("listen address %q has an invalid port", addr)
+	}
+	if host == "localhost" {
+		return "", nil
+	}
+	if host == "" {
+		host = "0.0.0.0"
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return "", fmt.Errorf("listen host %q must be an IP address (or localhost), so its exposure can be checked", host)
+	}
+	switch {
+	case ip.IsUnspecified():
+		return fmt.Sprintf("%s listens on EVERY interface, including any public one; the orchestrator is "+
+			"unauthenticated -- prefer this machine's private LAN IP, and restrict the port with a firewall rule", addr), nil
+	case ip.IsLoopback(), ip.IsPrivate(), ip.IsLinkLocalUnicast():
+		return "", nil
+	default:
+		return "", fmt.Errorf("listen host %q is a public address; the unauthenticated orchestrator must only listen "+
+			"on loopback or a private network", host)
+	}
 }
 
 func applyEnvOverrides(cfg *Config) {

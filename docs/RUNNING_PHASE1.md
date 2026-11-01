@@ -66,9 +66,12 @@ go build -o orchestrator.exe ./cmd/orchestrator
 You should see:
 
 ```
-gRPC WorkerRegistry service listening on 0.0.0.0:9090
-REST API listening on 0.0.0.0:8080
+gRPC WorkerRegistry service listening on 127.0.0.1:9090
+REST API listening on 127.0.0.1:8080
 ```
+
+(Before Phase 7 the defaults were `0.0.0.0`; they are loopback now. Set
+`grpc_address` / `rest_address` to a private LAN IP to serve other machines.)
 
 **Terminal 2 -- Worker:**
 

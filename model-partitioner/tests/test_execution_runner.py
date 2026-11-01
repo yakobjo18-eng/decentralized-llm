@@ -60,6 +60,7 @@ def test_single_worker_real_execution(single_plan, local):
     assert r["elapsed"]["total_seconds"] > 0 and "MEASURED" in r["elapsed"]["provenance"]
     assert r["stages"][0]["input"] == {"kind": "token_ids", "shape": [2, 8], "dtype": "int64"}
     assert r["handoffs"] == [] and r["error"] is None
+    assert r["test_classification"] == "REAL_SINGLE_MACHINE"
 
 
 def test_multi_stage_plan_emulated_locally_matches_reference(three_stage_plan):
@@ -67,6 +68,7 @@ def test_multi_stage_plan_emulated_locally_matches_reference(three_stage_plan):
     assert r["status"] == "succeeded", r["error"]
     assert r["execution_mode"] == "local-emulation" and r["distributed"] is False
     assert all(a["assignment_honored"] is False for a in r["worker_assignments"])
+    assert r["test_classification"] == "SIMULATED"  # the plan's workers are SIMULATED profiles
     assert any("LOCAL EMULATION" in w for w in r["warnings"])
     assert [s["unit_range"] for s in r["stages"]] == [st["unit_range"] for st in three_stage_plan["stages"]]
     assert [h["to_stage"] for h in r["handoffs"]] == [1, 2]

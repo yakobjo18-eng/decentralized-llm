@@ -18,6 +18,33 @@ option go_package = "orchestrator/internal/proto/execution;executionpb";
 
 service StageExecution {
   rpc ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse);
+  // Phase 7: read-only self-description for preflight checks (protocol
+  // versions, identity, limits). Executes nothing. Added without a
+  // protocol version bump: a Phase 6 worker answers UNIMPLEMENTED.
+  rpc GetInfo(GetInfoRequest) returns (GetInfoResponse);
+}
+
+message GetInfoRequest {
+  // The caller's protocol version, for the worker's logs only.
+  ProtocolVersion protocol_version = 1;
+}
+
+message GetInfoResponse {
+  ProtocolVersion protocol_version = 1;            // what this worker speaks
+  repeated ProtocolVersion supported_versions = 2;
+  // Self-reported and UNAUTHENTICATED, like everything here.
+  string worker_id = 3;
+  string worker_hostname = 4;
+  int32 worker_pid = 5;
+  repeated string executable_model_ids = 6;
+  repeated string supported_encodings = 7;         // "raw-le-c-v1"
+  int64 max_tensor_bytes = 8;
+  int64 max_message_bytes = 9;
+  int32 max_concurrent = 10;
+  int32 max_batch = 11;
+  int32 max_sequence = 12;                         // 0 = model maximum
+  double min_deadline_seconds = 13;
+  bool authenticated = 14;                         // always false today
 }
 
 // Bumped on any incompatible change. Workers reject other versions.

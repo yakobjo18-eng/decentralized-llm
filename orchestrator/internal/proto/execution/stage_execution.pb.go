@@ -246,6 +246,200 @@ func (StageStatus) EnumDescriptor() ([]byte, []int) {
 	return file_stage_execution_proto_rawDescGZIP(), []int{3}
 }
 
+type GetInfoRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The caller's protocol version, for the worker's logs only.
+	ProtocolVersion ProtocolVersion `protobuf:"varint,1,opt,name=protocol_version,json=protocolVersion,proto3,enum=decentralizedllm.execution.v1.ProtocolVersion" json:"protocol_version,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetInfoRequest) Reset() {
+	*x = GetInfoRequest{}
+	mi := &file_stage_execution_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInfoRequest) ProtoMessage() {}
+
+func (x *GetInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stage_execution_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetInfoRequest) Descriptor() ([]byte, []int) {
+	return file_stage_execution_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetInfoRequest) GetProtocolVersion() ProtocolVersion {
+	if x != nil {
+		return x.ProtocolVersion
+	}
+	return ProtocolVersion_PROTOCOL_VERSION_UNSPECIFIED
+}
+
+type GetInfoResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ProtocolVersion   ProtocolVersion        `protobuf:"varint,1,opt,name=protocol_version,json=protocolVersion,proto3,enum=decentralizedllm.execution.v1.ProtocolVersion" json:"protocol_version,omitempty"` // what this worker speaks
+	SupportedVersions []ProtocolVersion      `protobuf:"varint,2,rep,packed,name=supported_versions,json=supportedVersions,proto3,enum=decentralizedllm.execution.v1.ProtocolVersion" json:"supported_versions,omitempty"`
+	// Self-reported and UNAUTHENTICATED, like everything here.
+	WorkerId           string   `protobuf:"bytes,3,opt,name=worker_id,json=workerId,proto3" json:"worker_id,omitempty"`
+	WorkerHostname     string   `protobuf:"bytes,4,opt,name=worker_hostname,json=workerHostname,proto3" json:"worker_hostname,omitempty"`
+	WorkerPid          int32    `protobuf:"varint,5,opt,name=worker_pid,json=workerPid,proto3" json:"worker_pid,omitempty"`
+	ExecutableModelIds []string `protobuf:"bytes,6,rep,name=executable_model_ids,json=executableModelIds,proto3" json:"executable_model_ids,omitempty"`
+	SupportedEncodings []string `protobuf:"bytes,7,rep,name=supported_encodings,json=supportedEncodings,proto3" json:"supported_encodings,omitempty"` // "raw-le-c-v1"
+	MaxTensorBytes     int64    `protobuf:"varint,8,opt,name=max_tensor_bytes,json=maxTensorBytes,proto3" json:"max_tensor_bytes,omitempty"`
+	MaxMessageBytes    int64    `protobuf:"varint,9,opt,name=max_message_bytes,json=maxMessageBytes,proto3" json:"max_message_bytes,omitempty"`
+	MaxConcurrent      int32    `protobuf:"varint,10,opt,name=max_concurrent,json=maxConcurrent,proto3" json:"max_concurrent,omitempty"`
+	MaxBatch           int32    `protobuf:"varint,11,opt,name=max_batch,json=maxBatch,proto3" json:"max_batch,omitempty"`
+	MaxSequence        int32    `protobuf:"varint,12,opt,name=max_sequence,json=maxSequence,proto3" json:"max_sequence,omitempty"` // 0 = model maximum
+	MinDeadlineSeconds float64  `protobuf:"fixed64,13,opt,name=min_deadline_seconds,json=minDeadlineSeconds,proto3" json:"min_deadline_seconds,omitempty"`
+	Authenticated      bool     `protobuf:"varint,14,opt,name=authenticated,proto3" json:"authenticated,omitempty"` // always false today
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *GetInfoResponse) Reset() {
+	*x = GetInfoResponse{}
+	mi := &file_stage_execution_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInfoResponse) ProtoMessage() {}
+
+func (x *GetInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stage_execution_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetInfoResponse) Descriptor() ([]byte, []int) {
+	return file_stage_execution_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetInfoResponse) GetProtocolVersion() ProtocolVersion {
+	if x != nil {
+		return x.ProtocolVersion
+	}
+	return ProtocolVersion_PROTOCOL_VERSION_UNSPECIFIED
+}
+
+func (x *GetInfoResponse) GetSupportedVersions() []ProtocolVersion {
+	if x != nil {
+		return x.SupportedVersions
+	}
+	return nil
+}
+
+func (x *GetInfoResponse) GetWorkerId() string {
+	if x != nil {
+		return x.WorkerId
+	}
+	return ""
+}
+
+func (x *GetInfoResponse) GetWorkerHostname() string {
+	if x != nil {
+		return x.WorkerHostname
+	}
+	return ""
+}
+
+func (x *GetInfoResponse) GetWorkerPid() int32 {
+	if x != nil {
+		return x.WorkerPid
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetExecutableModelIds() []string {
+	if x != nil {
+		return x.ExecutableModelIds
+	}
+	return nil
+}
+
+func (x *GetInfoResponse) GetSupportedEncodings() []string {
+	if x != nil {
+		return x.SupportedEncodings
+	}
+	return nil
+}
+
+func (x *GetInfoResponse) GetMaxTensorBytes() int64 {
+	if x != nil {
+		return x.MaxTensorBytes
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetMaxMessageBytes() int64 {
+	if x != nil {
+		return x.MaxMessageBytes
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetMaxConcurrent() int32 {
+	if x != nil {
+		return x.MaxConcurrent
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetMaxBatch() int32 {
+	if x != nil {
+		return x.MaxBatch
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetMaxSequence() int32 {
+	if x != nil {
+		return x.MaxSequence
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetMinDeadlineSeconds() float64 {
+	if x != nil {
+		return x.MinDeadlineSeconds
+	}
+	return 0
+}
+
+func (x *GetInfoResponse) GetAuthenticated() bool {
+	if x != nil {
+		return x.Authenticated
+	}
+	return false
+}
+
 // One tensor. Encoding "raw-le-c-v1": the elements in C (row-major)
 // order, each in little-endian byte order, no header, no padding, no
 // compression. len(data) must equal product(shape) * itemsize(dtype).
@@ -265,7 +459,7 @@ type TensorPayload struct {
 
 func (x *TensorPayload) Reset() {
 	*x = TensorPayload{}
-	mi := &file_stage_execution_proto_msgTypes[0]
+	mi := &file_stage_execution_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -277,7 +471,7 @@ func (x *TensorPayload) String() string {
 func (*TensorPayload) ProtoMessage() {}
 
 func (x *TensorPayload) ProtoReflect() protoreflect.Message {
-	mi := &file_stage_execution_proto_msgTypes[0]
+	mi := &file_stage_execution_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,7 +484,7 @@ func (x *TensorPayload) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TensorPayload.ProtoReflect.Descriptor instead.
 func (*TensorPayload) Descriptor() ([]byte, []int) {
-	return file_stage_execution_proto_rawDescGZIP(), []int{0}
+	return file_stage_execution_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TensorPayload) GetEncoding() string {
@@ -368,7 +562,7 @@ type ExecuteStageRequest struct {
 
 func (x *ExecuteStageRequest) Reset() {
 	*x = ExecuteStageRequest{}
-	mi := &file_stage_execution_proto_msgTypes[1]
+	mi := &file_stage_execution_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -380,7 +574,7 @@ func (x *ExecuteStageRequest) String() string {
 func (*ExecuteStageRequest) ProtoMessage() {}
 
 func (x *ExecuteStageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stage_execution_proto_msgTypes[1]
+	mi := &file_stage_execution_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +587,7 @@ func (x *ExecuteStageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteStageRequest.ProtoReflect.Descriptor instead.
 func (*ExecuteStageRequest) Descriptor() ([]byte, []int) {
-	return file_stage_execution_proto_rawDescGZIP(), []int{1}
+	return file_stage_execution_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ExecuteStageRequest) GetProtocolVersion() ProtocolVersion {
@@ -497,7 +691,7 @@ type StageError struct {
 
 func (x *StageError) Reset() {
 	*x = StageError{}
-	mi := &file_stage_execution_proto_msgTypes[2]
+	mi := &file_stage_execution_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -509,7 +703,7 @@ func (x *StageError) String() string {
 func (*StageError) ProtoMessage() {}
 
 func (x *StageError) ProtoReflect() protoreflect.Message {
-	mi := &file_stage_execution_proto_msgTypes[2]
+	mi := &file_stage_execution_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -522,7 +716,7 @@ func (x *StageError) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageError.ProtoReflect.Descriptor instead.
 func (*StageError) Descriptor() ([]byte, []int) {
-	return file_stage_execution_proto_rawDescGZIP(), []int{2}
+	return file_stage_execution_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *StageError) GetCode() string {
@@ -564,7 +758,7 @@ type StageTiming struct {
 
 func (x *StageTiming) Reset() {
 	*x = StageTiming{}
-	mi := &file_stage_execution_proto_msgTypes[3]
+	mi := &file_stage_execution_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -576,7 +770,7 @@ func (x *StageTiming) String() string {
 func (*StageTiming) ProtoMessage() {}
 
 func (x *StageTiming) ProtoReflect() protoreflect.Message {
-	mi := &file_stage_execution_proto_msgTypes[3]
+	mi := &file_stage_execution_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -589,7 +783,7 @@ func (x *StageTiming) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageTiming.ProtoReflect.Descriptor instead.
 func (*StageTiming) Descriptor() ([]byte, []int) {
-	return file_stage_execution_proto_rawDescGZIP(), []int{3}
+	return file_stage_execution_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *StageTiming) GetValidateSeconds() float64 {
@@ -632,7 +826,7 @@ type ExecuteStageResponse struct {
 
 func (x *ExecuteStageResponse) Reset() {
 	*x = ExecuteStageResponse{}
-	mi := &file_stage_execution_proto_msgTypes[4]
+	mi := &file_stage_execution_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -644,7 +838,7 @@ func (x *ExecuteStageResponse) String() string {
 func (*ExecuteStageResponse) ProtoMessage() {}
 
 func (x *ExecuteStageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stage_execution_proto_msgTypes[4]
+	mi := &file_stage_execution_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -657,7 +851,7 @@ func (x *ExecuteStageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteStageResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteStageResponse) Descriptor() ([]byte, []int) {
-	return file_stage_execution_proto_rawDescGZIP(), []int{4}
+	return file_stage_execution_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ExecuteStageResponse) GetProtocolVersion() ProtocolVersion {
@@ -734,7 +928,26 @@ var File_stage_execution_proto protoreflect.FileDescriptor
 
 const file_stage_execution_proto_rawDesc = "" +
 	"\n" +
-	"\x15stage_execution.proto\x12\x1ddecentralizedllm.execution.v1\"\xaf\x02\n" +
+	"\x15stage_execution.proto\x12\x1ddecentralizedllm.execution.v1\"k\n" +
+	"\x0eGetInfoRequest\x12Y\n" +
+	"\x10protocol_version\x18\x01 \x01(\x0e2..decentralizedllm.execution.v1.ProtocolVersionR\x0fprotocolVersion\"\xa8\x05\n" +
+	"\x0fGetInfoResponse\x12Y\n" +
+	"\x10protocol_version\x18\x01 \x01(\x0e2..decentralizedllm.execution.v1.ProtocolVersionR\x0fprotocolVersion\x12]\n" +
+	"\x12supported_versions\x18\x02 \x03(\x0e2..decentralizedllm.execution.v1.ProtocolVersionR\x11supportedVersions\x12\x1b\n" +
+	"\tworker_id\x18\x03 \x01(\tR\bworkerId\x12'\n" +
+	"\x0fworker_hostname\x18\x04 \x01(\tR\x0eworkerHostname\x12\x1d\n" +
+	"\n" +
+	"worker_pid\x18\x05 \x01(\x05R\tworkerPid\x120\n" +
+	"\x14executable_model_ids\x18\x06 \x03(\tR\x12executableModelIds\x12/\n" +
+	"\x13supported_encodings\x18\a \x03(\tR\x12supportedEncodings\x12(\n" +
+	"\x10max_tensor_bytes\x18\b \x01(\x03R\x0emaxTensorBytes\x12*\n" +
+	"\x11max_message_bytes\x18\t \x01(\x03R\x0fmaxMessageBytes\x12%\n" +
+	"\x0emax_concurrent\x18\n" +
+	" \x01(\x05R\rmaxConcurrent\x12\x1b\n" +
+	"\tmax_batch\x18\v \x01(\x05R\bmaxBatch\x12!\n" +
+	"\fmax_sequence\x18\f \x01(\x05R\vmaxSequence\x120\n" +
+	"\x14min_deadline_seconds\x18\r \x01(\x01R\x12minDeadlineSeconds\x12$\n" +
+	"\rauthenticated\x18\x0e \x01(\bR\rauthenticated\"\xaf\x02\n" +
 	"\rTensorPayload\x12\x1a\n" +
 	"\bencoding\x18\x01 \x01(\tR\bencoding\x12@\n" +
 	"\x05dtype\x18\x02 \x01(\x0e2*.decentralizedllm.execution.v1.TensorDTypeR\x05dtype\x12\x14\n" +
@@ -803,9 +1016,10 @@ const file_stage_execution_proto_rawDesc = "" +
 	"\x15STAGE_STATUS_REJECTED\x10\x02\x12\x15\n" +
 	"\x11STAGE_STATUS_BUSY\x10\x03\x12\x17\n" +
 	"\x13STAGE_STATUS_FAILED\x10\x04\x12\"\n" +
-	"\x1eSTAGE_STATUS_DEADLINE_EXCEEDED\x10\x052\x89\x01\n" +
+	"\x1eSTAGE_STATUS_DEADLINE_EXCEEDED\x10\x052\xf3\x01\n" +
 	"\x0eStageExecution\x12w\n" +
-	"\fExecuteStage\x122.decentralizedllm.execution.v1.ExecuteStageRequest\x1a3.decentralizedllm.execution.v1.ExecuteStageResponseB3Z1orchestrator/internal/proto/execution;executionpbb\x06proto3"
+	"\fExecuteStage\x122.decentralizedllm.execution.v1.ExecuteStageRequest\x1a3.decentralizedllm.execution.v1.ExecuteStageResponse\x12h\n" +
+	"\aGetInfo\x12-.decentralizedllm.execution.v1.GetInfoRequest\x1a..decentralizedllm.execution.v1.GetInfoResponseB3Z1orchestrator/internal/proto/execution;executionpbb\x06proto3"
 
 var (
 	file_stage_execution_proto_rawDescOnce sync.Once
@@ -820,35 +1034,42 @@ func file_stage_execution_proto_rawDescGZIP() []byte {
 }
 
 var file_stage_execution_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stage_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stage_execution_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_stage_execution_proto_goTypes = []any{
 	(ProtocolVersion)(0),         // 0: decentralizedllm.execution.v1.ProtocolVersion
 	(TensorDType)(0),             // 1: decentralizedllm.execution.v1.TensorDType
 	(ActivationKind)(0),          // 2: decentralizedllm.execution.v1.ActivationKind
 	(StageStatus)(0),             // 3: decentralizedllm.execution.v1.StageStatus
-	(*TensorPayload)(nil),        // 4: decentralizedllm.execution.v1.TensorPayload
-	(*ExecuteStageRequest)(nil),  // 5: decentralizedllm.execution.v1.ExecuteStageRequest
-	(*StageError)(nil),           // 6: decentralizedllm.execution.v1.StageError
-	(*StageTiming)(nil),          // 7: decentralizedllm.execution.v1.StageTiming
-	(*ExecuteStageResponse)(nil), // 8: decentralizedllm.execution.v1.ExecuteStageResponse
+	(*GetInfoRequest)(nil),       // 4: decentralizedllm.execution.v1.GetInfoRequest
+	(*GetInfoResponse)(nil),      // 5: decentralizedllm.execution.v1.GetInfoResponse
+	(*TensorPayload)(nil),        // 6: decentralizedllm.execution.v1.TensorPayload
+	(*ExecuteStageRequest)(nil),  // 7: decentralizedllm.execution.v1.ExecuteStageRequest
+	(*StageError)(nil),           // 8: decentralizedllm.execution.v1.StageError
+	(*StageTiming)(nil),          // 9: decentralizedllm.execution.v1.StageTiming
+	(*ExecuteStageResponse)(nil), // 10: decentralizedllm.execution.v1.ExecuteStageResponse
 }
 var file_stage_execution_proto_depIdxs = []int32{
-	1,  // 0: decentralizedllm.execution.v1.TensorPayload.dtype:type_name -> decentralizedllm.execution.v1.TensorDType
-	2,  // 1: decentralizedllm.execution.v1.TensorPayload.kind:type_name -> decentralizedllm.execution.v1.ActivationKind
-	0,  // 2: decentralizedllm.execution.v1.ExecuteStageRequest.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
-	4,  // 3: decentralizedllm.execution.v1.ExecuteStageRequest.input:type_name -> decentralizedllm.execution.v1.TensorPayload
-	0,  // 4: decentralizedllm.execution.v1.ExecuteStageResponse.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
-	3,  // 5: decentralizedllm.execution.v1.ExecuteStageResponse.status:type_name -> decentralizedllm.execution.v1.StageStatus
-	4,  // 6: decentralizedllm.execution.v1.ExecuteStageResponse.output:type_name -> decentralizedllm.execution.v1.TensorPayload
-	7,  // 7: decentralizedllm.execution.v1.ExecuteStageResponse.timing:type_name -> decentralizedllm.execution.v1.StageTiming
-	6,  // 8: decentralizedllm.execution.v1.ExecuteStageResponse.error:type_name -> decentralizedllm.execution.v1.StageError
-	5,  // 9: decentralizedllm.execution.v1.StageExecution.ExecuteStage:input_type -> decentralizedllm.execution.v1.ExecuteStageRequest
-	8,  // 10: decentralizedllm.execution.v1.StageExecution.ExecuteStage:output_type -> decentralizedllm.execution.v1.ExecuteStageResponse
-	10, // [10:11] is the sub-list for method output_type
-	9,  // [9:10] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	0,  // 0: decentralizedllm.execution.v1.GetInfoRequest.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
+	0,  // 1: decentralizedllm.execution.v1.GetInfoResponse.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
+	0,  // 2: decentralizedllm.execution.v1.GetInfoResponse.supported_versions:type_name -> decentralizedllm.execution.v1.ProtocolVersion
+	1,  // 3: decentralizedllm.execution.v1.TensorPayload.dtype:type_name -> decentralizedllm.execution.v1.TensorDType
+	2,  // 4: decentralizedllm.execution.v1.TensorPayload.kind:type_name -> decentralizedllm.execution.v1.ActivationKind
+	0,  // 5: decentralizedllm.execution.v1.ExecuteStageRequest.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
+	6,  // 6: decentralizedllm.execution.v1.ExecuteStageRequest.input:type_name -> decentralizedllm.execution.v1.TensorPayload
+	0,  // 7: decentralizedllm.execution.v1.ExecuteStageResponse.protocol_version:type_name -> decentralizedllm.execution.v1.ProtocolVersion
+	3,  // 8: decentralizedllm.execution.v1.ExecuteStageResponse.status:type_name -> decentralizedllm.execution.v1.StageStatus
+	6,  // 9: decentralizedllm.execution.v1.ExecuteStageResponse.output:type_name -> decentralizedllm.execution.v1.TensorPayload
+	9,  // 10: decentralizedllm.execution.v1.ExecuteStageResponse.timing:type_name -> decentralizedllm.execution.v1.StageTiming
+	8,  // 11: decentralizedllm.execution.v1.ExecuteStageResponse.error:type_name -> decentralizedllm.execution.v1.StageError
+	7,  // 12: decentralizedllm.execution.v1.StageExecution.ExecuteStage:input_type -> decentralizedllm.execution.v1.ExecuteStageRequest
+	4,  // 13: decentralizedllm.execution.v1.StageExecution.GetInfo:input_type -> decentralizedllm.execution.v1.GetInfoRequest
+	10, // 14: decentralizedllm.execution.v1.StageExecution.ExecuteStage:output_type -> decentralizedllm.execution.v1.ExecuteStageResponse
+	5,  // 15: decentralizedllm.execution.v1.StageExecution.GetInfo:output_type -> decentralizedllm.execution.v1.GetInfoResponse
+	14, // [14:16] is the sub-list for method output_type
+	12, // [12:14] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_stage_execution_proto_init() }
@@ -862,7 +1083,7 @@ func file_stage_execution_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stage_execution_proto_rawDesc), len(file_stage_execution_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

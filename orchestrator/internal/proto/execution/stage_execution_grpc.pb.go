@@ -33,6 +33,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	StageExecution_ExecuteStage_FullMethodName = "/decentralizedllm.execution.v1.StageExecution/ExecuteStage"
+	StageExecution_GetInfo_FullMethodName      = "/decentralizedllm.execution.v1.StageExecution/GetInfo"
 )
 
 // StageExecutionClient is the client API for StageExecution service.
@@ -40,6 +41,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StageExecutionClient interface {
 	ExecuteStage(ctx context.Context, in *ExecuteStageRequest, opts ...grpc.CallOption) (*ExecuteStageResponse, error)
+	// Phase 7: read-only self-description for preflight checks (protocol
+	// versions, identity, limits). Executes nothing. Added without a
+	// protocol version bump: a Phase 6 worker answers UNIMPLEMENTED.
+	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*GetInfoResponse, error)
 }
 
 type stageExecutionClient struct {
@@ -60,11 +65,25 @@ func (c *stageExecutionClient) ExecuteStage(ctx context.Context, in *ExecuteStag
 	return out, nil
 }
 
+func (c *stageExecutionClient) GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*GetInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetInfoResponse)
+	err := c.cc.Invoke(ctx, StageExecution_GetInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StageExecutionServer is the server API for StageExecution service.
 // All implementations must embed UnimplementedStageExecutionServer
 // for forward compatibility.
 type StageExecutionServer interface {
 	ExecuteStage(context.Context, *ExecuteStageRequest) (*ExecuteStageResponse, error)
+	// Phase 7: read-only self-description for preflight checks (protocol
+	// versions, identity, limits). Executes nothing. Added without a
+	// protocol version bump: a Phase 6 worker answers UNIMPLEMENTED.
+	GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error)
 	mustEmbedUnimplementedStageExecutionServer()
 }
 
@@ -77,6 +96,9 @@ type UnimplementedStageExecutionServer struct{}
 
 func (UnimplementedStageExecutionServer) ExecuteStage(context.Context, *ExecuteStageRequest) (*ExecuteStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExecuteStage not implemented")
+}
+func (UnimplementedStageExecutionServer) GetInfo(context.Context, *GetInfoRequest) (*GetInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetInfo not implemented")
 }
 func (UnimplementedStageExecutionServer) mustEmbedUnimplementedStageExecutionServer() {}
 func (UnimplementedStageExecutionServer) testEmbeddedByValue()                        {}
@@ -117,6 +139,24 @@ func _StageExecution_ExecuteStage_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StageExecution_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StageExecutionServer).GetInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StageExecution_GetInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StageExecutionServer).GetInfo(ctx, req.(*GetInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // StageExecution_ServiceDesc is the grpc.ServiceDesc for StageExecution service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -127,6 +167,10 @@ var StageExecution_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ExecuteStage",
 			Handler:    _StageExecution_ExecuteStage_Handler,
+		},
+		{
+			MethodName: "GetInfo",
+			Handler:    _StageExecution_GetInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

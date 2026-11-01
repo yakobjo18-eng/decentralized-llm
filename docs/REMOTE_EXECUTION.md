@@ -23,7 +23,8 @@ limits) · [PARTITION_PLAN_SCHEMA.md](PARTITION_PLAN_SCHEMA.md) ·
 |---|---|
 | Two- and three-stage pipelines across **separate worker processes on one computer** (Computer 1, 127.0.0.1), real gRPC | **Tested** |
 | Full `worker.main` workers (registered with the real Go orchestrator, heartbeating) executing a two-stage pipeline | **Tested** (one computer) |
-| Stages on **separate physical computers** over a LAN | **Not tested.** Computers 2 and 3 are still unavailable to this project. |
+| Stages on **separate physical computers** over a LAN | **Not tested** (`PENDING`). Computers 2 and 3 are still unavailable to this project. Phase 7 prepared the procedure: [DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md). |
+| Phase 7 operational checks (worker stop/restart, hard kill, orchestrator restart, timeout, malformed requests, limits, clean shutdown) with 3 `worker.main` processes | **Tested** on one computer (`REAL_MULTI_PROCESS`); [report](validation/phase7-local-2026-11-01-run2/report.md) |
 
 Results report what the workers say about themselves: their hostnames
 and pids, plus `distinct_worker_processes` and
@@ -66,7 +67,18 @@ worker process: StageExecution server (its own port, separate from Health)
 
 ## Protocol: `decentralizedllm.execution.v1.StageExecution`
 
-One RPC: `ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse)`.
+Two RPCs:
+- `ExecuteStage(ExecuteStageRequest) returns (ExecuteStageResponse)`
+  runs one stage.
+- `GetInfo(GetInfoRequest) returns (GetInfoResponse)` (Phase 7) is
+  read-only self-description for preflight. It returns protocol
+  versions, worker id, hostname and pid, executable models, encodings,
+  and every limit, plus `authenticated: false`. It executes nothing and
+  takes no concurrency slot. It was added without a version bump: a
+  Phase 6 worker answers `UNIMPLEMENTED`, and preflight then falls back
+  to an `ExecuteStage` with protocol version 0, which is rejected before
+  anything else is looked at.
+
 The protocol version is `PROTOCOL_VERSION_1`. A worker answers a request
 with any other version with `REJECTED` / `PROTOCOL_VERSION`, and states
 its own version in the response.
@@ -217,7 +229,9 @@ These are `worker.yaml` keys, with env overrides where listed:
 | `execution_max_sequence` | 0 (= model maximum) | |
 | `execution_min_deadline_seconds` | 0.05 | |
 
-**Bind policy** (`worker/execution/server.py`):
+**Bind policy** (`worker/config/bind_policy.py`; since Phase 7 it is
+shared with the worker's Health server, and the Go orchestrator applies
+the same rules, see DEPLOYMENT_LAN.md "Security posture"):
 - Allowed: loopback and private or link-local IPs.
 - `0.0.0.0` / `::`: refused unless `execution_allow_all_interfaces: true`,
   and logged as a warning even then.
@@ -248,6 +262,12 @@ transformers takes about 11 s on Computer 1), so the first request isn't
 slowed by imports.
 
 ## Private-LAN setup (not yet exercised on real separate machines)
+
+> **Phase 7:** the complete, copy-pasteable two-computer procedure is in
+> [DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md). It covers firewall rules
+> limited to the peer IP, `preflight`, a physical test checklist, and a
+> results table that is `PENDING`. The short version below remains
+> correct.
 
 1. **On each worker machine**, find its private LAN IP (`ipconfig`, e.g.
    `192.168.1.21`) and set:
@@ -310,6 +330,7 @@ creates only one record. Run `execute --remote` with
 |---|---|
 | `execution_mode` | `remote` |
 | `distributed`, `distinct_worker_processes`, `distinct_worker_hostnames`, `distributed_note` | `distributed` is true when the stages ran in more than one worker process. Hostnames show whether that was more than one machine, as self-reported. |
+| `test_classification`, `test_classification_basis` (Phase 7) | `REAL_MULTI_MACHINE` if 2+ distinct reported hostnames, `REAL_MULTI_PROCESS` if one host with more than one process, `REAL_SINGLE_MACHINE` if everything ran in the coordinator's process. Derived from self-reports (unauthenticated). |
 | `protocol_version`, `transport`, `coordinator`, `remote_options` | how it ran |
 | `stages[].endpoint`, `worker_reported`, `attempts[]`, `round_trip_seconds`, `worker_timing`, `request_bytes`, `response_bytes` | per-stage detail |
 | `error.code`, `error.executed`, `error.attempts`, `failed_stage` | why a run failed, and whether the failed stage may have executed |
@@ -322,6 +343,10 @@ benchmark):
   and 26 ms.
 
 ## Security
+
+Phase 7 audited every listener: see DEPLOYMENT_LAN.md, "Security
+posture". All defaults are loopback now, and TLS / mutual
+authentication is described there as future work.
 
 - **No authentication or encryption.** Anyone who can reach the port can
   send requests. Anyone on the network path can read or alter

@@ -206,6 +206,20 @@ def execute_plan_remote(
             "activations passed over gRPC. Hostnames and pids are reported by the workers (unauthenticated); "
             "one host means this was NOT a multi-machine run."
         )
+        # Phase 7 test classification (docs/DEPLOYMENT_LAN.md). Workers in
+        # this coordinator's own process count as one process.
+        if not procs:
+            result["test_classification"] = None
+        elif len(hosts) > 1:
+            result["test_classification"] = "REAL_MULTI_MACHINE"
+        elif len(procs) > 1 or any(pid != os.getpid() for _, pid in procs):
+            result["test_classification"] = "REAL_MULTI_PROCESS"
+        else:
+            result["test_classification"] = "REAL_SINGLE_MACHINE"
+        result["test_classification_basis"] = (
+            "derived from the hostnames/pids the workers reported (unauthenticated); REAL_MULTI_MACHINE needs two or more "
+            "distinct hostnames" if procs else "no stage ran"
+        )
         return result
 
     def reject(problems, phase):

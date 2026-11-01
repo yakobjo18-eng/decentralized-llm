@@ -1,0 +1,479 @@
+{
+ "partition_plan_schema_version": 1,
+ "created_at": "2026-11-01T07:24:03.219094+00:00",
+ "planner": {
+  "name": "model-partitioner",
+  "version": "0.1.0",
+  "algorithm": "dp-min-bottleneck-v1"
+ },
+ "model": {
+  "model_id": "builtin:tiny-gpt2-v1",
+  "architecture": "gpt2",
+  "adapter": "gpt2 v1",
+  "n_layers": 4,
+  "hidden_size": 32,
+  "intermediate_size": 128,
+  "n_heads": 4,
+  "n_kv_heads": 4,
+  "head_dim": 8,
+  "vocab_size": 128,
+  "max_positions": 32,
+  "total_params": 56000,
+  "units": [
+   {
+    "index": 0,
+    "name": "embeddings",
+    "kind": "embedding",
+    "components": [
+     "transformer.wte",
+     "transformer.wpe",
+     "transformer.drop"
+    ],
+    "block_index": null
+   },
+   {
+    "index": 1,
+    "name": "block.0",
+    "kind": "transformer_block",
+    "components": [
+     "transformer.h.0"
+    ],
+    "block_index": 0
+   },
+   {
+    "index": 2,
+    "name": "block.1",
+    "kind": "transformer_block",
+    "components": [
+     "transformer.h.1"
+    ],
+    "block_index": 1
+   },
+   {
+    "index": 3,
+    "name": "block.2",
+    "kind": "transformer_block",
+    "components": [
+     "transformer.h.2"
+    ],
+    "block_index": 2
+   },
+   {
+    "index": 4,
+    "name": "block.3",
+    "kind": "transformer_block",
+    "components": [
+     "transformer.h.3"
+    ],
+    "block_index": 3
+   },
+   {
+    "index": 5,
+    "name": "final_norm",
+    "kind": "final_norm",
+    "components": [
+     "transformer.ln_f"
+    ],
+    "block_index": null
+   },
+   {
+    "index": 6,
+    "name": "lm_head",
+    "kind": "lm_head",
+    "components": [
+     "lm_head"
+    ],
+    "block_index": null
+   }
+  ],
+  "tied_weights": [
+   [
+    "lm_head.weight",
+    "transformer.wte.weight"
+   ]
+  ],
+  "config_fingerprint": "78241c314848e65fe9abc6b6e74835c3db0f3a143504365c20d197c47c1c6337",
+  "config": {
+   "model_type": "gpt2",
+   "n_layer": 4,
+   "n_embd": 32,
+   "n_head": 4,
+   "n_inner": null,
+   "vocab_size": 128,
+   "n_positions": 32,
+   "activation_function": "gelu_new",
+   "layer_norm_epsilon": 1e-05,
+   "tie_word_embeddings": true
+  },
+  "checkpoint": null,
+  "unit_memory": [
+   {
+    "unit": 0,
+    "name": "embeddings",
+    "kind": "embedding",
+    "params": 5120,
+    "tied_params": 0,
+    "weight_bytes": 20480,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 0,
+    "activation_peak_bytes": 8192
+   },
+   {
+    "unit": 1,
+    "name": "block.0",
+    "kind": "transformer_block",
+    "params": 12704,
+    "tied_params": 0,
+    "weight_bytes": 50816,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 16384,
+    "activation_peak_bytes": 114688
+   },
+   {
+    "unit": 2,
+    "name": "block.1",
+    "kind": "transformer_block",
+    "params": 12704,
+    "tied_params": 0,
+    "weight_bytes": 50816,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 16384,
+    "activation_peak_bytes": 114688
+   },
+   {
+    "unit": 3,
+    "name": "block.2",
+    "kind": "transformer_block",
+    "params": 12704,
+    "tied_params": 0,
+    "weight_bytes": 50816,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 16384,
+    "activation_peak_bytes": 114688
+   },
+   {
+    "unit": 4,
+    "name": "block.3",
+    "kind": "transformer_block",
+    "params": 12704,
+    "tied_params": 0,
+    "weight_bytes": 50816,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 16384,
+    "activation_peak_bytes": 114688
+   },
+   {
+    "unit": 5,
+    "name": "final_norm",
+    "kind": "final_norm",
+    "params": 64,
+    "tied_params": 0,
+    "weight_bytes": 256,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 0,
+    "activation_peak_bytes": 16384
+   },
+   {
+    "unit": 6,
+    "name": "lm_head",
+    "kind": "lm_head",
+    "params": 0,
+    "tied_params": 4096,
+    "weight_bytes": 0,
+    "weight_provenance": "CALCULATED",
+    "kv_cache_bytes": 0,
+    "activation_peak_bytes": 40960
+   }
+  ]
+ },
+ "precision": {
+  "weight_dtype": "fp32",
+  "quantization": "none",
+  "activation_dtype": "fp32",
+  "kv_cache_dtype": "fp32",
+  "quant_group_size": 128,
+  "quantize_embeddings": false,
+  "quantize_lm_head": false,
+  "quantization_runtime_implemented": null
+ },
+ "workload": {
+  "batch_size": 2,
+  "context_length": 32,
+  "prompt_length": 32,
+  "cost_mode": "decode",
+  "logits_positions": "all"
+ },
+ "memory_policy": {
+  "runtime_overhead_bytes": 734003200,
+  "runtime_overhead_basis": "MEASURED on Computer 1: RSS after importing torch 2.10 + transformers 5.20 and building GPT-2 on the meta device (698-701 MiB); assumed for every worker",
+  "runtime_overhead_provenance": "MEASURED",
+  "extra_safety_fraction": 0.1,
+  "include_kv_cache": true,
+  "include_load_temp": true,
+  "checkpoint_dtype": "fp32"
+ },
+ "cost_model": {
+  "cpu_flops_per_cycle_per_core": 8.0,
+  "throughput_preference": "estimated",
+  "account_for_utilization": true,
+  "link_bandwidth_bytes_per_s": null,
+  "link_latency_s": 0.0
+ },
+ "workers_considered": [
+  {
+   "worker_id": "val-a",
+   "profile_source": "REAL",
+   "hostname": "YakobsPC",
+   "simulated_profile_name": "",
+   "origin": "phase7 validation: synthetic capacity (live data infeasible)"
+  },
+  {
+   "worker_id": "val-b",
+   "profile_source": "REAL",
+   "hostname": "YakobsPC",
+   "simulated_profile_name": "",
+   "origin": "phase7 validation: synthetic capacity (live data infeasible)"
+  }
+ ],
+ "feasible": true,
+ "objective": {
+  "type": "minimize_max_stage_time",
+  "cost_basis": "decode step (batch 2, context 32)",
+  "bottleneck_seconds": 1.7009113504556753e-06,
+  "total_seconds": 3.210995384069121e-06,
+  "seconds_provenance": "ESTIMATED",
+  "worker_order_search": "all 2 worker orders searched (2 evaluated); ties -> lower total time, then worker-id order"
+ },
+ "stages": [
+  {
+   "stage_index": 0,
+   "worker_id": "val-b",
+   "profile_source": "REAL",
+   "simulated_profile_name": null,
+   "hostname": "YakobsPC",
+   "unit_range": [
+    0,
+    3
+   ],
+   "layer_range": {
+    "first_block": 0,
+    "last_block": 1
+   },
+   "units": [
+    "embeddings",
+    "block.0",
+    "block.1"
+   ],
+   "components": [
+    "transformer.wte",
+    "transformer.wpe",
+    "transformer.drop",
+    "transformer.h.0",
+    "transformer.h.1"
+   ],
+   "execution": {
+    "device": "cpu",
+    "backend": "cpu",
+    "gpu_id": null,
+    "effective_gflops": 76.16,
+    "throughput_provenance": "ESTIMATED",
+    "throughput_basis": "10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)",
+    "utilization_factor": 0.56,
+    "device_capacity_bytes": 1449551462,
+    "host_capacity_bytes": 1449551462,
+    "capacity_basis": "RAM usable 3221225472 B x RAM share 0.500 x (1 - extra safety 0.1)",
+    "ram_share": 0.5
+   },
+   "memory": {
+    "device_bytes": 277760,
+    "host_bytes": 734019584,
+    "total_bytes": 734297344,
+    "provenance": "ESTIMATED",
+    "items": [
+     {
+      "name": "weights",
+      "bytes": 122112,
+      "provenance": "CALCULATED",
+      "basis": "parameters of units 0..2 at fp32"
+     },
+     {
+      "name": "kv_cache",
+      "bytes": 32768,
+      "provenance": "CALCULATED",
+      "basis": "2 x batch 2 x context 32 x 4 kv heads x head_dim 8 x 4 B per block"
+     },
+     {
+      "name": "activations_peak",
+      "bytes": 114688,
+      "provenance": "ESTIMATED",
+      "basis": "largest single-unit peak for a 32-token prefill (eager attention, freed between layers)"
+     },
+     {
+      "name": "outgoing_hidden_state_buffer",
+      "bytes": 8192,
+      "provenance": "ESTIMATED",
+      "basis": "batch x 32 tokens x hidden 32 x 4 B held for the next stage"
+     },
+     {
+      "name": "load_temp_buffer",
+      "bytes": 16384,
+      "provenance": "ESTIMATED",
+      "basis": "largest tensor (4096 values) in checkpoint dtype fp32 during load/conversion"
+     },
+     {
+      "name": "runtime_overhead",
+      "bytes": 734003200,
+      "provenance": "MEASURED",
+      "basis": "MEASURED on Computer 1: RSS after importing torch 2.10 + transformers 5.20 and building GPT-2 on the meta device (698-701 MiB); assumed for every worker"
+     }
+    ]
+   },
+   "memory_fits": true,
+   "available_memory": {
+    "ram_available_bytes": 4294967296,
+    "ram_usable_bytes": 3221225472,
+    "ram_phase3_margin_bytes": 1687688806,
+    "device_capacity_bytes": 1449551462,
+    "host_capacity_bytes": 1449551462
+   },
+   "estimated_seconds": 1.5100840336134453e-06,
+   "estimated_compute_seconds": 1.5100840336134453e-06,
+   "estimated_transfer_seconds": 0.0,
+   "estimated_flops": 115008.0,
+   "cost_provenance": "ESTIMATED",
+   "is_bottleneck": false,
+   "explanation": [
+    "Runs units 0..2 (embeddings, blocks 0-1) on cpu/cpu.",
+    "Memory: needs 700.28 MiB (ESTIMATED) of 1.35 GiB effective RAM (50.7%).",
+    "Estimated 0.002 ms per step at 76.2 effective GFLOPS (10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)) -- 88.8% of the bottleneck.",
+    "Moving the val-b->val-a boundary one unit earlier (block.1) would give a bottleneck of 0.002 ms (+43.64%).",
+    "Moving the val-b->val-a boundary one unit later (block.2) would give a bottleneck of 0.002 ms (+33.05%)."
+   ]
+  },
+  {
+   "stage_index": 1,
+   "worker_id": "val-a",
+   "profile_source": "REAL",
+   "simulated_profile_name": null,
+   "hostname": "YakobsPC",
+   "unit_range": [
+    3,
+    7
+   ],
+   "layer_range": {
+    "first_block": 2,
+    "last_block": 3
+   },
+   "units": [
+    "block.2",
+    "block.3",
+    "final_norm",
+    "lm_head"
+   ],
+   "components": [
+    "transformer.h.2",
+    "transformer.h.3",
+    "transformer.ln_f",
+    "lm_head"
+   ],
+   "execution": {
+    "device": "cpu",
+    "backend": "cpu",
+    "gpu_id": null,
+    "effective_gflops": 77.248,
+    "throughput_provenance": "ESTIMATED",
+    "throughput_basis": "10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)",
+    "utilization_factor": 0.568,
+    "device_capacity_bytes": 1449551462,
+    "host_capacity_bytes": 1449551462,
+    "capacity_basis": "RAM usable 3221225472 B x RAM share 0.500 x (1 - extra safety 0.1)",
+    "ram_share": 0.5
+   },
+   "memory": {
+    "device_bytes": 265728,
+    "host_bytes": 734019584,
+    "total_bytes": 734285312,
+    "provenance": "ESTIMATED",
+    "items": [
+     {
+      "name": "weights",
+      "bytes": 101888,
+      "provenance": "CALCULATED",
+      "basis": "parameters of units 3..6 at fp32"
+     },
+     {
+      "name": "tied_weight_copy",
+      "bytes": 16384,
+      "provenance": "CALCULATED",
+      "basis": "lm_head.weight (tied to transformer.wte.weight): owner is on another stage, so this stage holds its own copy"
+     },
+     {
+      "name": "kv_cache",
+      "bytes": 32768,
+      "provenance": "CALCULATED",
+      "basis": "2 x batch 2 x context 32 x 4 kv heads x head_dim 8 x 4 B per block"
+     },
+     {
+      "name": "activations_peak",
+      "bytes": 114688,
+      "provenance": "ESTIMATED",
+      "basis": "largest single-unit peak for a 32-token prefill (eager attention, freed between layers)"
+     },
+     {
+      "name": "load_temp_buffer",
+      "bytes": 16384,
+      "provenance": "ESTIMATED",
+      "basis": "largest tensor (4096 values) in checkpoint dtype fp32 during load/conversion"
+     },
+     {
+      "name": "runtime_overhead",
+      "bytes": 734003200,
+      "provenance": "MEASURED",
+      "basis": "MEASURED on Computer 1: RSS after importing torch 2.10 + transformers 5.20 and building GPT-2 on the meta device (698-701 MiB); assumed for every worker"
+     }
+    ]
+   },
+   "memory_fits": true,
+   "available_memory": {
+    "ram_available_bytes": 4294967296,
+    "ram_usable_bytes": 3221225472,
+    "ram_phase3_margin_bytes": 1687688806,
+    "device_capacity_bytes": 1449551462,
+    "host_capacity_bytes": 1449551462
+   },
+   "estimated_seconds": 1.7009113504556753e-06,
+   "estimated_compute_seconds": 1.7009113504556753e-06,
+   "estimated_transfer_seconds": 0.0,
+   "estimated_flops": 131392.0,
+   "cost_provenance": "ESTIMATED",
+   "is_bottleneck": true,
+   "explanation": [
+    "Runs units 3..6 (blocks 2-3, final_norm, lm_head) on cpu/cpu.",
+    "Memory: needs 700.27 MiB (ESTIMATED) of 1.35 GiB effective RAM (50.7%).",
+    "Estimated 0.002 ms per step at 77.2 effective GFLOPS (10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)) -- this is the BOTTLENECK stage.",
+    "Holds its own copy of the LM head weight: it is tied to the token embedding, which lives on another stage."
+   ]
+  }
+ ],
+ "unused_workers": [],
+ "includes_simulated_workers": false,
+ "executable": false,
+ "executable_reason": "a multi-stage plan cannot run in one process: it needs activation transport between workers (Phase 6: run it with `execute --remote`, one worker process per stage, or emulate it locally)",
+ "warnings": [
+  "Inter-stage transfer time is NOT modelled (no link bandwidth given); real pipelines pay it per boundary.",
+  "val-a shares host 'YakobsPC' with 1 other worker(s); each is given 1/2 of its usable RAM. Local processes on one machine are NOT independent computers.",
+  "val-b shares host 'YakobsPC' with 1 other worker(s); each is given 1/2 of its usable RAM. Local processes on one machine are NOT independent computers.",
+  "val-a is this planning machine (YakobsPC): its available RAM was measured while this planner process (~700 MiB, mostly torch + transformers) was running, so it is lower than a worker would see without the planner.",
+  "val-b is this planning machine (YakobsPC): its available RAM was measured while this planner process (~700 MiB, mostly torch + transformers) was running, so it is lower than a worker would see without the planner."
+ ],
+ "assumptions": [
+  "Stage time = calculated FLOPs / effective throughput; elementwise ops and memory-bandwidth limits are not modelled.",
+  "Memory covers a worst-case prefill of prompt_length tokens with a KV cache sized for context_length.",
+  "Activations assume eager attention (scores materialized) and are freed layer by layer.",
+  "The first stage holds the embeddings, the last stage the final norm and LM head (layer order is fixed).",
+  "val-a throughput: 10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed).",
+  "val-b throughput: 10 physical cores x 1700 MHz x 8.0 FLOPs/cycle (assumed)."
+ ],
+ "infeasibility": null,
+ "inputs_fingerprint": "53afc8f3f7508ada1f1a8105f25e892c755c2c108ed794f5be7dc31efdfd0aa6"
+}

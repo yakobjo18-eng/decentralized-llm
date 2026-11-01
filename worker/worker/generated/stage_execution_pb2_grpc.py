@@ -39,6 +39,11 @@ class StageExecutionStub:
                 request_serializer=stage__execution__pb2.ExecuteStageRequest.SerializeToString,
                 response_deserializer=stage__execution__pb2.ExecuteStageResponse.FromString,
                 _registered_method=True)
+        self.GetInfo = channel.unary_unary(
+                '/decentralizedllm.execution.v1.StageExecution/GetInfo',
+                request_serializer=stage__execution__pb2.GetInfoRequest.SerializeToString,
+                response_deserializer=stage__execution__pb2.GetInfoResponse.FromString,
+                _registered_method=True)
 
 
 class StageExecutionServicer:
@@ -50,6 +55,15 @@ class StageExecutionServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetInfo(self, request, context):
+        """Phase 7: read-only self-description for preflight checks (protocol
+        versions, identity, limits). Executes nothing. Added without a
+        protocol version bump: a Phase 6 worker answers UNIMPLEMENTED.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_StageExecutionServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -57,6 +71,11 @@ def add_StageExecutionServicer_to_server(servicer, server):
                     servicer.ExecuteStage,
                     request_deserializer=stage__execution__pb2.ExecuteStageRequest.FromString,
                     response_serializer=stage__execution__pb2.ExecuteStageResponse.SerializeToString,
+            ),
+            'GetInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetInfo,
+                    request_deserializer=stage__execution__pb2.GetInfoRequest.FromString,
+                    response_serializer=stage__execution__pb2.GetInfoResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,6 +105,33 @@ class StageExecution:
             '/decentralizedllm.execution.v1.StageExecution/ExecuteStage',
             stage__execution__pb2.ExecuteStageRequest.SerializeToString,
             stage__execution__pb2.ExecuteStageResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetInfo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/decentralizedllm.execution.v1.StageExecution/GetInfo',
+            stage__execution__pb2.GetInfoRequest.SerializeToString,
+            stage__execution__pb2.GetInfoResponse.FromString,
             options,
             channel_credentials,
             insecure,

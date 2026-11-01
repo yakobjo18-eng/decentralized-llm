@@ -61,6 +61,7 @@ def test_two_stage_pipeline_matches_the_local_reference(workers):
     assert all(s["attempts"] == [s["attempts"][0]] and s["attempts"][0]["outcome"] == "STAGE_STATUS_OK" for s in r["stages"])
     # Both servers live in this test process: honestly NOT distributed.
     assert r["distinct_worker_processes"] == 1 and r["distributed"] is False
+    assert r["test_classification"] == "REAL_SINGLE_MACHINE"
     assert r["plan"]["plan_id"] == plan["inputs_fingerprint"]
 
 
@@ -253,6 +254,7 @@ def test_two_worker_processes_over_grpc(processes):
     assert pids == [processes["p-a"].proc.pid, processes["p-b"].proc.pid] and os.getpid() not in pids
     assert r["distinct_worker_processes"] == 2 and r["distributed"] is True
     assert r["distinct_worker_hostnames"] == [socket.gethostname()]
+    assert r["test_classification"] == "REAL_MULTI_PROCESS"  # one host: never REAL_MULTI_MACHINE
     assert "NOT a multi-machine run" in r["distributed_note"]
     ref = t.reference_forward(torch.tensor(IDS))
     diff = (torch.tensor(r["output"]["logits"]) - ref).abs().max().item()

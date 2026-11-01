@@ -391,7 +391,7 @@ configuration is needed; workers register dynamically.
    ```yaml
    worker_id: "computer-2"                 # stable, unique
    orchestrator_address: "<Computer 1 LAN IP>:9090"
-   listen_host: "0.0.0.0"
+   listen_host: "127.0.0.1"                # Phase 7: loopback (nothing dials Health remotely); was "0.0.0.0"
    listen_port: 50100
    advertise_host: "<this machine's LAN IP>"   # if its hostname doesn't resolve from Computer 1
    simulated_profile: ""                   # REAL hardware

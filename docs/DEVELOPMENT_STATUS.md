@@ -1,6 +1,6 @@
 # Development Status
 
-Last updated: 2026-11-01 (Phase 6 -- remote stage execution over gRPC)
+Last updated: 2026-11-01 (Phase 7 -- LAN deployment readiness; physical test PENDING)
 
 ## Completed phases
 
@@ -640,10 +640,131 @@ them as gRPC messages. Guide: [REMOTE_EXECUTION.md](REMOTE_EXECUTION.md).
 - automatic placement, fault-tolerant rescheduling or KV cache;
 - GPT-2 execution, quantized inference.
 
+### Phase 7 — Physical LAN validation readiness, 2026-11-01
+
+Goal: get the two-computer pipeline ready, validate everything possible
+on Computer 1, and write a repeatable procedure for Computer 2. Guide:
+[DEPLOYMENT_LAN.md](DEPLOYMENT_LAN.md).
+
+**The physical multi-machine test is `PENDING`.** Computers 2 and 3 are
+unavailable, and no test or run is `REAL_MULTI_MACHINE`.
+
+**Implemented and tested:**
+- **Loopback by default everywhere.** The orchestrator REST/gRPC
+  (`0.0.0.0:8080/9090` → `127.0.0.1`) and worker Health (`0.0.0.0` →
+  `127.0.0.1`) defaults changed; StageExecution already was loopback.
+  One bind policy for every listener:
+  - loopback and private IPs are allowed;
+  - public IPs and hostnames are refused at startup;
+  - `0.0.0.0` is allowed with a warning (orchestrator, Health) or needs
+    an explicit opt-in (StageExecution).
+
+  It is implemented in Go (`config.CheckBindAddress`) and Python
+  (`worker/config/bind_policy.py`, shared by Health and StageExecution).
+  The example configs and `.env.example` now use loopback too.
+- **`GetInfo` RPC** on StageExecution: read-only; reports protocol
+  versions, identity, models, encodings, limits and
+  `authenticated: false`. Python and Go stubs were regenerated for that
+  proto only. Phase 6 workers are handled by a rejected-version probe
+  that executes nothing.
+- **`python -m partitioner preflight`** (`partitioner/preflight.py`).
+  Checks:
+  - runtime and pins;
+  - this machine's interfaces, with a public-IP warning;
+  - worker config: parse, stable id, bind policy, address ownership,
+    port free, port clash, execution and simulated flags, message limit,
+    orchestrator address;
+  - orchestrator: DNS and TCP, `/health`, registrations online and REAL,
+    backend probe finished;
+  - endpoints: DNS and TCP with classified failures (dns, refused,
+    timeout, unreachable, Windows loopback quirk), gRPC GetInfo, protocol
+    compatibility, identity;
+  - plan: validity, capacity against the live orchestrator, per-stage
+    assignment against GetInfo and the orchestrator, loopback-for-remote
+    detection, hosts spanned (`--require-multi-host`);
+  - limits per stage against worker GetInfo and coordinator defaults.
+
+  Every check states what it tested; anything untested is `SKIP`. Exit 1
+  on any FAIL.
+- **Test classification.** Every Python test is classified, enforced at
+  collection, with a summary at the end of each run
+  (`tests/classification.py`). Remote results carry `test_classification`
+  derived from worker self-reports; local results carry
+  `REAL_SINGLE_MACHINE` or `SIMULATED`.
+- **`scripts/phase7_local_validation.py`.** With the real orchestrator
+  and 3 `worker.main` processes on loopback, it runs:
+  - preflight, exposure audit, planning from live registrations;
+  - 2- and 3-worker pipelines;
+  - limit, malformed and timeout failures;
+  - graceful and hard worker restarts, orchestrator restart;
+  - clean shutdown.
+
+  It writes `report.md`, `report.json` and the logs.
+  `scripts/lan_result_summary.py` turns an execution result into the
+  physical-test record rows.
+
+**Local validation results** (`REAL_MULTI_PROCESS`, Computer 1):
+[run2](validation/phase7-local-2026-11-01-run2/report.md) passed
+**14/14**. Run 1 passed 13/14 because of a script bug (wrong stage-owner
+assumption), which was fixed and is kept on record. Highlights:
+- all 8 listening sockets were on 127.0.0.1;
+- pipelines matched the reference exactly (diff 0.0);
+- a hard-killed worker was marked offline after 2.8 s and back 0.5 s
+  after restart;
+- a graceful restart took 8.1 s; while the worker was down, its stage
+  failed `RETRIES_EXHAUSTED`, `executed: false`;
+- **execution kept working while the orchestrator was down**, and all
+  workers re-registered 0.8 s after it returned.
+
+**Findings, not fixed:**
+- **Live planning on Computer 1 is INFEASIBLE.** The largest effective
+  capacity was 52–82 MiB across runs, against 700 MiB per stage (the
+  measured runtime overhead). The validation pipelines used the same REAL
+  records with a synthetic 3 GiB capacity, labelled as such everywhere.
+- **Firewall exposure.** Computer 1 has two pre-existing inbound
+  **Allow** rules for `python.exe` on the **Public** firewall profile
+  ("Python"). They were not changed, and the guide explains how to
+  review them.
+- Workers register before their backend probe finishes, and planning
+  refuses them until it does (about 4 s here; preflight now warns). The
+  first validation dry run hit this.
+- On Windows a closed port reports "refused" only after about 2 s
+  (measured), so preflight's default timeout is 3 s.
+
+**Not done:** the physical two-computer test (procedure and `PENDING`
+results table in DEPLOYMENT_LAN.md); the optional LAN-IP bind step
+(could raise a firewall prompt, and its traffic stays on the machine);
+TLS and authentication (future work, described, not implemented).
+
 ## In progress
 
-None. Phase 6 is complete. Waiting for approval before the next phase.
-Nothing was committed and nothing was installed.
+None. Phase 7 is complete, apart from the physical test, which is
+`PENDING` until Computer 2 is available. Waiting for approval. Nothing
+was committed and nothing was installed.
+
+## Test results (actual output, Phase 7, 2026-11-01)
+
+No physical multi-machine test was run.
+
+| Suite | Command | Result | REAL_SINGLE_MACHINE | REAL_MULTI_PROCESS | REAL_MULTI_MACHINE | SIMULATED |
+|---|---|---|---|---|---|---|
+| Partitioner | `cd model-partitioner; python -m pytest -q` | **326 passed**, 0 failed | 209 | 7 | 0 | 110 |
+| Worker | `cd worker; python -m pytest -q` | **150 passed**, 0 failed | 57 | 3 | 0 | 90 |
+| Go | `cd orchestrator; gofmt -l .; go vet ./...; go test ./... -v -count=1` | gofmt and vet clean, **104 `--- PASS`, 0 `--- FAIL`** | in-process tests, not individually classified (none multi-process or multi-machine) | | 0 | |
+| Phase 1 smoke | `powershell -ExecutionPolicy Bypass -File scripts/smoke_test_phase1.ps1` | **PASS** | | real orchestrator + worker | | |
+| Local validation | `python scripts/phase7_local_validation.py --out docs/validation/phase7-local-2026-11-01-run2` | **14/14** | 1 step | 13 steps | 0 | |
+
+New tests:
+- `test_preflight.py` (35);
+- `worker/tests/test_bind_policy.py` (13);
+- 3 Go config tests (loopback defaults, bind policy, public address
+  refused);
+- `test_classification` assertions added to existing execution tests.
+
+During development, one new test failed intermittently: the live
+preflight test raced the workers' backend probes. The test was wrong
+(it waited for "online" but asserted "probe finished") and now waits for
+the right state. It passed in 3 consecutive runs afterwards.
 
 ## Test results (actual output, Phase 6, 2026-11-01)
 
@@ -988,6 +1109,18 @@ via `go test`/`pytest` unit coverage of the deregister path).
 
 ## Known issues / blockers
 
+- (Phase 7) **The physical two-computer test is PENDING.** Computer 2 is
+  unavailable. Procedure: DEPLOYMENT_LAN.md.
+- (Phase 7) Live planning on Computer 1 is infeasible under the default
+  Phase 3 margins: 52–82 MiB effective vs. 700 MiB per stage. A real C1+C2
+  plan may need freed RAM or explicitly lowered orchestrator `capability:`
+  margins, recorded as a deviation.
+- (Phase 7) Computer 1 has inbound Allow rules for `python.exe` on the
+  Public firewall profile. Review them; they were not modified.
+- (Phase 7) Default binds changed from `0.0.0.0` to `127.0.0.1` for the
+  orchestrator and worker Health. Any setup that relied on the old
+  defaults to reach another machine must now set the LAN IP explicitly.
+
 - (Phase 6) Remote execution has run **only between processes on
   Computer 1**. Cross-machine behaviour, firewall rules for port 50200
   and cross-CPU numerical agreement are untested. The 1e-4 tolerance is
@@ -1052,6 +1185,12 @@ via `go test`/`pytest` unit coverage of the deregister path).
   during testing, which affected the timing figures above.
 
 ## Next implementation steps
+
+- (After Phase 7, on approval) When Computer 2 is available, follow the
+  DEPLOYMENT_LAN.md checklist and fill in its results table: first the
+  `REAL_MULTI_MACHINE` run, then the disconnect/restart repeats. After
+  that: TLS with mutual authentication, and advertising execution
+  endpoints through registration.
 
 - (After Phase 6, on approval) Run the two-worker pipeline across
   physical machines once Computers 2/3 are reachable (REMOTE_EXECUTION.md,

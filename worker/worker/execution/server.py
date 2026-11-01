@@ -1,55 +1,25 @@
 """The StageExecution gRPC server: its own server and port, separate from
 the worker's Health server, with explicit limits.
 
-Bind-address policy (the protocol is unauthenticated):
-  - loopback (127.0.0.1, ::1, localhost) and private / link-local
-    addresses (10/8, 172.16/12, 192.168/16, fc00::/7, ...) are allowed;
-  - 0.0.0.0 / :: (every interface, public ones included) only with
-    execution_allow_all_interfaces: true, and logged as a warning;
-  - globally routable (public) addresses and hostnames are refused.
+Bind-address policy (the protocol is unauthenticated): see
+worker/config/bind_policy.py. 0.0.0.0 / :: additionally needs
+execution_allow_all_interfaces: true.
 """
 
 from __future__ import annotations
 
-import ipaddress
 import logging
 from concurrent import futures
 from typing import Optional, Tuple
 
 import grpc
 
+from worker.config.bind_policy import BindAddressError, check_bind_host  # noqa: F401 -- re-exported
 from worker.config.loader import WorkerConfig
 from worker.execution.service import MIB, ServiceConfig, StageExecutionServicer, ensure_partitioner_importable
 from worker.generated import stage_execution_pb2_grpc as pb_grpc
 
 logger = logging.getLogger("worker.execution")
-
-
-class BindAddressError(ValueError):
-    pass
-
-
-def check_bind_host(host: str, allow_all_interfaces: bool = False) -> None:
-    if host == "localhost":
-        return
-    try:
-        ip = ipaddress.ip_address(host.strip("[]"))
-    except ValueError:
-        raise BindAddressError(
-            f"execution_listen_host {host!r} must be an IP address (or 'localhost'), so its scope can be checked"
-        ) from None
-    if ip.is_unspecified:
-        if not allow_all_interfaces:
-            raise BindAddressError(
-                f"execution_listen_host {host!r} listens on EVERY interface, including any public one; set it to this "
-                "machine's private LAN IP, or set execution_allow_all_interfaces: true if a firewall restricts it"
-            )
-        logger.warning("StageExecution listens on ALL interfaces (%s): it is unauthenticated; make sure a firewall "
-                       "limits it to the private LAN", host)
-        return
-    if not (ip.is_loopback or ip.is_private or ip.is_link_local):
-        raise BindAddressError(f"execution_listen_host {host!r} is a public address; the unauthenticated StageExecution "
-                               "service must only listen on loopback or a private network")
 
 
 def service_config(cfg: WorkerConfig) -> ServiceConfig:

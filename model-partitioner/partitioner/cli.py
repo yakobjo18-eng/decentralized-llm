@@ -7,6 +7,7 @@
   python -m partitioner validate PLAN.json --model gpt2 [worker sources as for plan]
   python -m partitioner execute  PLAN.json --tokens "1,2,3;4,5,6" (--local WORKER_ID | --emulate-stages-locally)
   python -m partitioner execute  PLAN.json --tokens "1,2,3" --remote --endpoint W1=HOST:PORT --endpoint W2=HOST:PORT
+  python -m partitioner preflight [--worker-config worker.yaml] [--orchestrator URL] [--endpoint ID=HOST:PORT ...] [--plan PLAN.json]
 
 Worker sources can be combined. `plan`, `validate` and `memory` only
 plan. `execute` (Phase 5) runs the built-in test model
@@ -280,6 +281,28 @@ def _cmd_execute(args) -> int:
     return 0 if result["status"] == "succeeded" else 1
 
 
+def _cmd_preflight(args) -> int:
+    from partitioner import preflight
+    from partitioner.execution.remote import parse_endpoint
+
+    endpoints = {}
+    for item in args.endpoint:
+        try:
+            wid, addr = parse_endpoint(item)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        endpoints[wid] = addr
+    report = preflight.run(args.worker_config, args.orchestrator, args.expect_worker, endpoints, args.plan,
+                           args.require_multi_host, args.timeout, args.skip_runtime)
+    if args.out:
+        from pathlib import Path
+
+        Path(args.out).write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
+    print(json.dumps(report.to_dict(), indent=2) if args.json else report.render())
+    return 1 if report.failed else 0
+
+
 def main(argv: List[str] = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m partitioner", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -318,6 +341,17 @@ def main(argv: List[str] = None) -> int:
     p.add_argument("--no-reference-check", action="store_true", help="skip the unpartitioned reference comparison")
     p.add_argument("--include-logits", action="store_true", help="include the full logits in the result")
     p.add_argument("--out", help="also write the result JSON here")
+    p = sub.add_parser("preflight", help="Phase 7: deployment diagnostics (config, reachability, protocol, plan, limits)")
+    p.add_argument("--worker-config", action="append", default=[], metavar="YAML", help="check a worker config on THIS machine")
+    p.add_argument("--orchestrator", metavar="URL", help="orchestrator REST URL, e.g. http://192.168.1.10:8080")
+    p.add_argument("--expect-worker", action="append", default=[], metavar="ID", help="worker that must be registered")
+    p.add_argument("--endpoint", action="append", default=[], metavar="WORKER_ID=HOST:PORT")
+    p.add_argument("--plan", help="plan JSON to check against the endpoints and the orchestrator")
+    p.add_argument("--require-multi-host", action="store_true", help="FAIL unless the plan spans two or more hosts")
+    p.add_argument("--timeout", type=float, default=3.0, help="per network check, seconds")
+    p.add_argument("--skip-runtime", action="store_true", help="skip the dependency checks")
+    p.add_argument("--json", action="store_true", help="print the report as JSON")
+    p.add_argument("--out", help="also write the JSON report here")
     args = parser.parse_args(argv)
     return {"inspect": _cmd_inspect, "memory": _cmd_memory, "plan": _cmd_plan, "validate": _cmd_validate,
-            "execute": _cmd_execute}[args.cmd](args)
+            "execute": _cmd_execute, "preflight": _cmd_preflight}[args.cmd](args)

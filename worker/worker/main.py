@@ -73,6 +73,7 @@ import grpc
 
 from worker.communication.health_server import create_server
 from worker.communication.registry_client import RegistryClient
+from worker.config.bind_policy import check_bind_host
 from worker.config.loader import WorkerConfig, load as load_config
 from worker.hardware.profiler import HardwareProfiler
 from worker.hardware.simulated import SIMULATED_NOTICE, load_profile
@@ -217,6 +218,8 @@ def run(config_path: str) -> None:
             except (AttributeError, ValueError, OSError):
                 pass  # not meaningfully available in this context/platform
 
+    # Phase 7: refuse public / hostname binds; 0.0.0.0 only with a warning.
+    check_bind_host(cfg.listen_host, allow_all_interfaces=True, setting="listen_host", allow_flag="")
     health_server = create_server(cfg.worker_id, cfg.listen_address)
     health_server.start()
     logger.info("health gRPC service listening on %s", cfg.listen_address)
