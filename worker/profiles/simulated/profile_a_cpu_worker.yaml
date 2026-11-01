@@ -1,0 +1,39 @@
+# SIMULATED - NOT PHYSICALLY VERIFIED
+#
+# Example profile A: a CPU-only worker. Every number below is an
+# arbitrary, editable test value. This is NOT the specification of
+# Computer 2 or Computer 3 (their hardware is unknown). See
+# docs/SIMULATED_HARDWARE.md for the format.
+profile_format_version: 1
+profile_source: SIMULATED
+name: profile-a-cpu-worker
+description: "Example CPU-only worker with no GPU (configurable cores/RAM)."
+hostname: sim-profile-a
+
+os:
+  name: Windows
+  version: "11"
+
+cpu:
+  manufacturer: Intel
+  model: "Simulated 8-core desktop CPU"
+  architecture: AMD64
+  physical_cores: 8
+  logical_cores: 16
+  max_frequency_mhz: 3600
+
+ram:
+  total_gib: 16
+  swap_total_gib: 8
+
+gpus: []
+
+backends:
+  torch_installed: true
+  cpu: true
+
+# Values the simulated worker reports on every heartbeat.
+dynamic:
+  cpu_utilization_percent: 12
+  ram_available_gib: 11
+  swap_used_gib: 0.5

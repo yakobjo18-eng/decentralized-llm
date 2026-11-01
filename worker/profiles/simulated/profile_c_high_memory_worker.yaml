@@ -1,0 +1,44 @@
+# SIMULATED - NOT PHYSICALLY VERIFIED
+#
+# Example profile C: a high-memory worker with an optional integrated
+# GPU that has NO compute backend (like Computer 1's Iris Xe: present
+# as hardware, not usable for inference). Delete the gpus entry for a
+# GPU-less variant. Every number is an arbitrary, editable test value
+# and is NOT the specification of Computer 2 or Computer 3.
+profile_format_version: 1
+profile_source: SIMULATED
+name: profile-c-high-memory-worker
+description: "Example high-memory worker; optional integrated GPU without a compute backend."
+hostname: sim-profile-c
+
+os:
+  name: Windows
+  version: "11"
+
+cpu:
+  manufacturer: Intel
+  model: "Simulated 16-core workstation CPU"
+  architecture: AMD64
+  physical_cores: 16
+  logical_cores: 24
+  max_frequency_mhz: 3000
+
+ram:
+  total_gib: 64
+  swap_total_gib: 16
+
+gpus:
+  - vendor: Intel
+    model: "Simulated integrated GPU"
+    memory_type: shared
+    shared_gib: 32
+    compute_backends: []
+
+backends:
+  torch_installed: true
+  cpu: true
+
+dynamic:
+  cpu_utilization_percent: 5
+  ram_available_gib: 52
+  swap_used_gib: 1

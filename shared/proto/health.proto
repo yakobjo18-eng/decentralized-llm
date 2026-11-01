@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+// Health is implemented by worker nodes (not the orchestrator) so the
+// orchestrator -- or an operator, or an integration test -- can query a
+// specific worker's live status directly, as distinct from the
+// registry's last-known-heartbeat view on the orchestrator side.
+package decentralizedllm.health.v1;
+
+option go_package = "orchestrator/internal/proto/health;healthpb";
+
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  // "SERVING" or "NOT_SERVING".
+  string status = 1;
+  string worker_id = 2;
+  int64 server_time_unix_ms = 3;
+}

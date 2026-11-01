@@ -1,0 +1,17 @@
+# Pinned to the versions actually installed and verified on Computer 1
+# (Python 3.13.3, Windows 11) during Phase 1. Re-verify when adding a
+# second Python minor version or a different OS to the cluster.
+#
+# NOTE: torch and transformers are intentionally NOT listed yet -- they
+# are Phase 3/4 dependencies (model loading, hardware profiling via
+# torch.cuda) and will be pinned once that work starts, after
+# confirming PyTorch wheel availability for this Python version on
+# every worker machine.
+
+grpcio==1.85.0
+grpcio-tools==1.85.0
+protobuf==7.36.2
+PyYAML==6.0.2
+python-dotenv==1.2.4
+psutil==7.2.2
+pytest==9.1.1

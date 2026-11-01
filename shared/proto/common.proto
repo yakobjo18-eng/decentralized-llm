@@ -1,0 +1,240 @@
+syntax = "proto3";
+
+// Shared message types used across the registry and (in later phases)
+// tensor-transport services. Kept in its own file so both the control
+// plane (registration/heartbeats) and the future data plane (tensor
+// transport, Phase 5) can import it without duplication.
+package decentralizedllm.common.v1;
+
+option go_package = "orchestrator/internal/proto/common;commonpb";
+
+// Explicit tensor element data type. Never inferred on the receiving
+// side -- the sender always states it. Populated starting Phase 5 when
+// real tensor transport is implemented; defined now so the registry's
+// HardwareInfo and future tensor messages share one enum.
+enum DataType {
+  DATA_TYPE_UNSPECIFIED = 0;
+  DATA_TYPE_FLOAT32 = 1;
+  DATA_TYPE_FLOAT16 = 2;
+  DATA_TYPE_BFLOAT16 = 3;
+  DATA_TYPE_INT64 = 4;
+  DATA_TYPE_INT32 = 5;
+  DATA_TYPE_BOOL = 6;
+}
+
+// GPUInfo describes one detected GPU device (Phase 3). Any GPU vendor
+// may appear here, not just NVIDIA -- the old has_cuda_gpu/gpu_name/
+// gpu_vram_bytes fields on HardwareInfo below still exist and are
+// still populated (from the first CUDA-capable GPU found, if any) for
+// backward compatibility with Phase 1/2 code and tests; this message
+// is the fuller, multi-GPU, multi-vendor successor.
+message GPUInfo {
+  // "NVIDIA" | "AMD" | "Intel" | "Unknown".
+  string vendor = 1;
+  string name = 2;
+  // Absent (not just zero) when genuinely unknown -- e.g. an
+  // integrated GPU whose memory figure WMI reports is not a reliable
+  // dedicated-VRAM number, or a vendor/backend that exposed nothing
+  // usable. Never fabricated.
+  optional int64 memory_total_bytes = 3;
+  // "dedicated" | "shared" | "unknown".
+  string memory_type = 4;
+  // Detected execution backends for this specific device, e.g.
+  // ["CUDA"]. This is a HARDWARE-level signal (a driver was found),
+  // not proof any particular framework can actually use it -- see
+  // the torch_* / cuda_available fields below for tested capability.
+  repeated string backends = 5;
+  string driver_version = 6;
+
+  // --- hardware_schema_version 3 ---
+
+  // Stable per-boot identifier for this adapter, used to match
+  // GPUMetrics (sent on heartbeats) to this inventory entry. On Windows
+  // this is the DXGI adapter LUID ("luid:0x00000000_0x000160E5"), the
+  // same identifier the "GPU Engine" performance counters use.
+  string id = 7;
+  // Raw DXGI_ADAPTER_DESC1 figures (Windows only). Kept separate from
+  // memory_total_bytes because they mean different things:
+  //   dedicated_memory_bytes -- DedicatedVideoMemory. For a discrete
+  //     GPU this is on-board VRAM. For an integrated GPU it is a small
+  //     firmware carve-out of SYSTEM RAM (e.g. 128 MiB on Iris Xe),
+  //     NOT separate VRAM -- memory_type stays "shared" in that case.
+  //   shared_memory_bytes -- SharedSystemMemory: the CEILING of system
+  //     RAM Windows will let this adapter borrow (typically half of
+  //     installed RAM). A limit, not an allocation; it is the same RAM
+  //     the CPU uses, so it must never be added to RAM capacity twice.
+  optional int64 dedicated_memory_bytes = 8;
+  optional int64 shared_memory_bytes = 9;
+  // Where the memory figures came from: "nvidia-smi" | "dxgi" | "wmi" |
+  // "" (none). Lets a reader judge reliability (wmi is a 32-bit field
+  // known to misreport >4 GB).
+  string memory_source = 10;
+  // True when the adapter shares system RAM (memory_type "shared").
+  bool integrated = 11;
+}
+
+// GPUMetrics are dynamic per-adapter measurements, sampled far more
+// often than the GPUInfo inventory (Windows: in-process PDH
+// performance counters, no subprocess). Every value is optional:
+// absent means "not measurable on this machine/driver", never 0.
+message GPUMetrics {
+  // Matches GPUInfo.id.
+  string gpu_id = 1;
+  // Busiest engine type (3D, Compute, Copy, VideoDecode...) summed
+  // over processes, capped at 100 -- the same aggregation Task Manager
+  // uses for its headline GPU % figure.
+  optional double utilization_percent = 2;
+  optional int64 dedicated_memory_used_bytes = 3;
+  optional int64 shared_memory_used_bytes = 4;
+}
+
+// BackendCapability is one inference execution backend as actually
+// probed on this worker (hardware_schema_version 3). Designed to be
+// extended with new backend names (e.g. "rocm", "xpu", "mps",
+// "directml", "vulkan") without new proto fields. Hardware presence is
+// NOT recorded here -- see GPUInfo -- only what a framework could
+// actually use.
+message BackendCapability {
+  // Lowercase backend name: "cpu" | "cuda" | "xpu" | "mps" |
+  // "directml" | ... (open set).
+  string name = 1;
+  // Tri-state: absent = could not be determined (e.g. torch not
+  // installed, so never probed).
+  optional bool available = 2;
+  int32 device_count = 3;
+  // Framework-reported version string where applicable (e.g. the CUDA
+  // runtime version torch was built against).
+  string version = 4;
+  // Device names the framework reported (e.g. torch.cuda.get_device_name).
+  repeated string devices = 5;
+  // Whether a small compute test (a tiny matmul, checked against the
+  // known result) was actually run on this backend.
+  bool tested = 6;
+  // Absent when not tested.
+  optional bool test_passed = 7;
+  // Rough float32 matmul throughput from that test. A micro-benchmark
+  // for relative comparison only, measured once at profile time.
+  optional double test_gflops = 8;
+  // Human-readable note: why unavailable, or test error text.
+  string detail = 9;
+}
+
+// ProfileSource says where a HardwareInfo's numbers came from. A
+// SIMULATED profile is a hand-written test fixture loaded from YAML
+// (worker/profiles/simulated/); its numbers describe no physical
+// machine and must never be presented as measurements.
+enum ProfileSource {
+  // Pre-schema-3 senders. Readers must NOT assume REAL.
+  PROFILE_SOURCE_UNSPECIFIED = 0;
+  PROFILE_SOURCE_REAL = 1;
+  PROFILE_SOURCE_SIMULATED = 2;
+}
+
+// HardwareInfo is a worker's self-reported hardware snapshot, sent at
+// registration time and refreshed on re-registration (Phase 3 adds a
+// periodic re-registration specifically to refresh this -- see
+// docs/HARDWARE_PROFILING.md).
+//
+// hardware_schema_version: 1 = only the original Phase 1/2 fields
+// below are meaningfully populated (an old worker, or a test fixture
+// built before Phase 3). 2 = the first Phase 3 fields (CPU identity,
+// GPU list, torch/CUDA/DirectML, live CPU/RAM) are populated too.
+// 3 = additionally profile_source/timestamp, CPU frequency/load, swap,
+// backend_capabilities, DXGI memory figures and gpu_metrics.
+// Unset (0) is treated as 1 by readers, for the same reason -- it's
+// what a pre-Phase-3 message looks like. Readers must tolerate a
+// version newer than they know (proto3 ignores unknown fields).
+//
+// Phase 1/2 fields (always populated): hostname, cpu_logical_cores,
+// total_ram_bytes, has_cuda_gpu, os, python_version. has_cuda_gpu is
+// detected via the presence of nvidia-smi (or, since Phase 3, any
+// detected GPU with a CUDA backend), never assumed.
+message HardwareInfo {
+  string hostname = 1;
+  int32 cpu_logical_cores = 2;
+  int64 total_ram_bytes = 3;
+  bool has_cuda_gpu = 4;
+  string gpu_name = 5;
+  int64 gpu_vram_bytes = 6;
+  string os = 7;
+  string python_version = 8;
+
+  // --- Phase 3 ---
+  int32 hardware_schema_version = 9;
+
+  string cpu_manufacturer = 10;
+  string cpu_model = 11;
+  int32 cpu_physical_cores = 12;
+  string cpu_architecture = 13;
+
+  string os_name = 14;
+  string os_version = 15;
+  string os_build = 16;
+
+  repeated GPUInfo gpus = 17;
+
+  // Whether PyTorch is importable at all on this worker. Never forced
+  // -- the profiler only checks for an existing install, it does not
+  // pip install anything.
+  bool torch_installed = 18;
+  string torch_version = 19;
+  // True once torch_installed is true (CPU execution is always
+  // available if torch is present at all).
+  bool cpu_backend_available = 20;
+  // Tri-state: absent/unset means "unknown" (torch not installed, so
+  // this was never tested), not "false". Only set once torch.cuda.is_available()
+  // was actually called.
+  optional bool cuda_available = 21;
+  optional int32 cuda_device_count = 22;
+  // Tri-state for the same reason: whether the torch-directml package
+  // is importable (a DirectX12-based accelerator backend usable by
+  // non-NVIDIA GPUs on Windows), checked only if torch itself is
+  // installed.
+  optional bool directml_available = 23;
+
+  // Live metrics, as of the moment this snapshot was collected (cheap
+  // to produce via psutil; refreshed far more often via Heartbeat --
+  // see HeartbeatRequest in registry.proto -- these are just the
+  // values at registration/refresh time, before any heartbeat has
+  // landed).
+  optional double cpu_utilization_percent = 24;
+  optional int64 ram_available_bytes = 25;
+  optional int64 ram_used_bytes = 26;
+  optional double ram_utilization_percent = 27;
+
+  // --- hardware_schema_version 3 ---
+  ProfileSource profile_source = 28;
+  // When the worker collected this snapshot (worker clock).
+  int64 profile_collected_at_unix_ms = 29;
+  // Set only for PROFILE_SOURCE_SIMULATED.
+  string simulated_profile_name = 30;
+
+  // psutil.cpu_freq(). On Windows "current" can fall below the base
+  // clock when power-throttled but never shows turbo above it -- see
+  // docs/HARDWARE_PROFILING.md.
+  optional double cpu_frequency_current_mhz = 31;
+  optional double cpu_frequency_max_mhz = 32;
+  // 1-minute load average (psutil emulates it on Windows from the
+  // processor queue length; absent until it has warmed up).
+  optional double cpu_load_average_1m = 33;
+
+  // Page file / swap: a memory-pressure indicator.
+  optional int64 swap_total_bytes = 34;
+  optional int64 swap_used_bytes = 35;
+  optional double swap_utilization_percent = 36;
+
+  repeated BackendCapability backend_capabilities = 37;
+  // CUDA runtime version the installed torch was BUILT against
+  // (torch.version.cuda) -- says nothing about whether a GPU exists.
+  string torch_cuda_build_version = 38;
+
+  repeated GPUMetrics gpu_metrics = 39;
+
+  // True while the worker's inference-backend probe (an `import torch`
+  // plus the compute test, run in a separate process -- 8-14 s on
+  // Computer 1) hasn't finished yet. The worker registers without
+  // waiting for it and re-registers when it completes. While true,
+  // torch_installed / cpu_backend_available / backend_capabilities
+  // carry NO information and must not be read as "not installed".
+  bool backend_probe_pending = 40;
+}

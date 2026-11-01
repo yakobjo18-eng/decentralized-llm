@@ -1,0 +1,11 @@
+# Versions actually installed and used on Computer 1 for Phase 4
+# (Python 3.13.3). torch was already present (Phase 3 notes); nothing
+# here was newly installed for this phase. Also needs the worker's
+# requirements (psutil, PyYAML, pytest) for the worker-resource loaders.
+# Installed build on Computer 1 is 2.10.0+cu126; any 2.10.0 build works
+# for planning (the meta device needs no CUDA).
+torch==2.10.0
+transformers==5.20.1
+huggingface_hub==2.2.0
+safetensors==0.8.0
+-r ../worker/requirements.txt

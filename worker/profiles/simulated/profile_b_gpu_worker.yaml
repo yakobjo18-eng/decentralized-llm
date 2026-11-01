@@ -1,0 +1,47 @@
+# SIMULATED - NOT PHYSICALLY VERIFIED
+#
+# Example profile B: a worker with one discrete NVIDIA-class GPU.
+# Every number below is an arbitrary, editable test value. This is NOT
+# the specification of Computer 2 or Computer 3 -- nothing is known
+# about whether either has a GPU at all. See docs/SIMULATED_HARDWARE.md.
+profile_format_version: 1
+profile_source: SIMULATED
+name: profile-b-gpu-worker
+description: "Example GPU worker: configurable CPU, RAM, GPU model and VRAM."
+hostname: sim-profile-b
+
+os:
+  name: Windows
+  version: "11"
+
+cpu:
+  manufacturer: AMD
+  model: "Simulated 6-core desktop CPU"
+  architecture: AMD64
+  physical_cores: 6
+  logical_cores: 12
+  max_frequency_mhz: 4200
+
+ram:
+  total_gib: 32
+  swap_total_gib: 8
+
+gpus:
+  - vendor: NVIDIA
+    model: "Simulated discrete GPU (8 GiB)"
+    memory_type: dedicated
+    vram_gib: 8
+    shared_gib: 16
+    compute_backends: [cuda]
+
+backends:
+  torch_installed: true
+  cpu: true
+
+dynamic:
+  cpu_utilization_percent: 8
+  ram_available_gib: 24
+  swap_used_gib: 0.2
+  gpus:
+    - utilization_percent: 3
+      vram_used_gib: 0.6

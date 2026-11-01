@@ -1,0 +1,48 @@
+# --- secrets / local overrides ---
+.env
+.env.local
+*.local.yaml
+orchestrator.yaml
+worker.yaml
+
+# --- Go ---
+orchestrator/orchestrator.exe
+orchestrator/*.exe
+orchestrator/*.exe~
+orchestrator/*.test
+
+# --- Python ---
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# --- Node / Next.js ---
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env*.local
+npm-debug.log*
+
+# --- model weights / downloads (large, never commit) ---
+models/
+*.safetensors
+*.bin
+*.gguf
+
+# --- benchmark output (machine-specific, regenerate rather than diff) ---
+benchmarks/results/
+
+# --- scratch ---
+scripts/.smoke_logs/
+scripts/.multi_worker_run/
+scripts/.phase3_demo/
+*.log
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

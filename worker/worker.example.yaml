@@ -1,0 +1,43 @@
+# Copy to worker.yaml and adjust, or override any of these via
+# environment variables (see .env.example at the repo root). No
+# machine-specific IP is hardcoded here -- orchestrator_address below is
+# a loopback placeholder for local development only. When deploying to
+# Computer 2 or Computer 3, set it to Computer 1's real LAN address.
+
+# Leave empty to auto-generate "<hostname>-<pid>" at startup. Set this
+# explicitly for a stable identity across restarts.
+worker_id: ""
+
+# host:port where the orchestrator's WorkerRegistry gRPC service listens.
+orchestrator_address: "127.0.0.1:9090"
+
+# Where this worker's own gRPC server (Health service, and later the
+# tensor-transport service) listens.
+listen_host: "0.0.0.0"
+listen_port: 50100
+
+# Host/IP the orchestrator should use to reach this worker. Leave
+# empty to use listen_host (or this machine's hostname when listening
+# on 0.0.0.0). On a LAN where hostnames don't resolve between Windows
+# machines, set it to this machine's LAN IP (ipconfig -> IPv4 Address).
+advertise_host: ""
+
+heartbeat_interval_seconds: 5.0
+log_level: "info"
+
+# --- Phase 3: hardware profiling ---
+# How often the static hardware profile (CPU identity, GPU inventory)
+# is re-collected and re-sent. The inference backend probe (torch +
+# compute test) runs only at startup and after a reconnection. Live
+# CPU/RAM metrics ride on every heartbeat regardless.
+hardware_refresh_interval_seconds: 300.0
+# How often GPU utilization/memory counters are sampled (in-process
+# Windows performance counters; heartbeats in between carry none).
+gpu_metrics_interval_seconds: 15.0
+# Run a tiny verified matmul on each available backend at profiling
+# time (no model download; well under 1 MB of memory).
+backend_compute_test: true
+# Path to a SIMULATED hardware profile (see docs/SIMULATED_HARDWARE.md).
+# Leave empty to profile the real machine. A simulated worker is only
+# accepted by an orchestrator started with allow_simulated_workers: true.
+simulated_profile: ""

@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+// WorkerRegistry is the control-plane service implemented by the Go
+// orchestrator. Workers call it to join the cluster and report liveness.
+//
+// Phase 1 status: Register, Heartbeat, and Deregister are fully
+// implemented end to end (real gRPC calls, real in-memory registry
+// state, no fakes). What is deliberately NOT yet implemented:
+//   - Heartbeat-timeout detection / marking a worker offline (Phase 2/8)
+//   - Backup worker reassignment on failure (Phase 8)
+//   - Model partition metadata (added to RegisterRequest/Response in
+//     Phase 4)
+package decentralizedllm.registry.v1;
+
+option go_package = "orchestrator/internal/proto/registry;registrypb";
+
+import "common.proto";
+
+service WorkerRegistry {
+  // Register a worker with the orchestrator. Idempotent: calling again
+  // with the same worker_id refreshes its stored info and counts as a
+  // heartbeat too.
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+
+  // Heartbeat tells the orchestrator a registered worker is still alive.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // Deregister removes a worker from the registry, used on graceful
+  // worker shutdown.
+  rpc Deregister(DeregisterRequest) returns (DeregisterResponse);
+}
+
+message RegisterRequest {
+  string worker_id = 1;
+  // host:port the worker's own gRPC server (Health service, and later
+  // the tensor-transport service) listens on.
+  string address = 2;
+  decentralizedllm.common.v1.HardwareInfo hardware = 3;
+}
+
+message RegisterResponse {
+  bool accepted = 1;
+  string message = 2;
+  int64 server_time_unix_ms = 3;
+}
+
+message HeartbeatRequest {
+  string worker_id = 1;
+  int64 client_time_unix_ms = 2;
+  // Free-form status string, e.g. "idle", "busy".
+  string status = 3;
+
+  // Phase 3 live metrics: cheap to sample every heartbeat (psutil),
+  // unlike the fuller hardware snapshot in RegisterRequest (which
+  // includes GPU enumeration -- comparatively expensive, refreshed far
+  // less often; see docs/HARDWARE_PROFILING.md). optional so "not
+  // reported this beat" (e.g. a sampling failure) is distinguishable
+  // from a genuine 0.0/0 value and leaves the orchestrator's
+  // previously known value untouched rather than zeroing it out.
+  optional double cpu_utilization_percent = 4;
+  optional int64 ram_available_bytes = 5;
+  optional int64 ram_used_bytes = 6;
+  optional double ram_utilization_percent = 7;
+
+  // --- hardware_schema_version 3 ---
+  optional double cpu_frequency_current_mhz = 8;
+  optional double cpu_load_average_1m = 9;
+  optional int64 swap_total_bytes = 10;
+  optional int64 swap_used_bytes = 11;
+  optional double swap_utilization_percent = 12;
+  // GPU metrics are sampled on their own (slower) interval; an empty
+  // list means "not sampled this beat" and leaves stored values alone.
+  repeated decentralizedllm.common.v1.GPUMetrics gpu_metrics = 13;
+  // Worker clock time the metrics above were sampled.
+  int64 metrics_collected_at_unix_ms = 14;
+}
+
+message HeartbeatResponse {
+  bool acknowledged = 1;
+  int64 server_time_unix_ms = 2;
+
+  // --- Phase 3 ---
+  // Why acknowledged is false, if it is.
+  string message = 3;
+  // True when the orchestrator has no record of this worker (e.g. the
+  // orchestrator restarted and lost its in-memory registry). The worker
+  // should re-register with a FRESH full hardware profile.
+  bool reregister_required = 4;
+}
+
+message DeregisterRequest {
+  string worker_id = 1;
+  string reason = 2;
+}
+
+message DeregisterResponse {
+  bool accepted = 1;
+}

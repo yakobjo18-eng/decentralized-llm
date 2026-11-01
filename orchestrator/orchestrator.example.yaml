@@ -1,0 +1,41 @@
+# Copy to orchestrator.yaml and adjust as needed, or override any of
+# these via environment variables (see .env.example at the repo root).
+# Nothing here is a hardcoded IP meant for a specific machine -- this is
+# the default local configuration.
+
+# Address the dashboard-facing REST API binds to.
+rest_address: "0.0.0.0:8080"
+
+# Address the WorkerRegistry gRPC service binds to.
+grpc_address: "0.0.0.0:9090"
+
+log_level: "info"
+
+# Origin allowed to call the REST API from a browser (the frontend dev
+# server). Set to "" to disable CORS headers entirely.
+cors_origin: "http://localhost:3000"
+
+# How long (seconds) a worker can go without a heartbeat before it is
+# reported offline. Workers heartbeat every 5s by default, so 15s
+# tolerates two missed beats (e.g. a brief network hiccup) before
+# marking a worker offline. Lower this for faster failure detection in
+# testing; raise it on a flakier network.
+heartbeat_timeout_seconds: 15
+
+# Phase 3: accept workers reporting a SIMULATED hardware profile
+# (docs/SIMULATED_HARDWARE.md). Keep false for any real deployment;
+# set true only for local development/algorithm testing. Simulated
+# workers are labelled "SIMULATED - NOT PHYSICALLY VERIFIED" in every
+# API response either way.
+allow_simulated_workers: false
+
+# Phase 3: capability classification thresholds and the memory safety
+# margins used by the partition-planning view (GET /api/resources).
+# Starting points, to be tuned in Phase 4 -- not measured values.
+capability:
+  high_memory_threshold_gib: 32
+  low_memory_threshold_gib: 8
+  ram_safety_margin_percent: 10
+  ram_safety_margin_min_gib: 1
+  vram_safety_margin_percent: 10
+  vram_safety_margin_min_gib: 0.5

@@ -1,0 +1,456 @@
+{
+  "partition_plan_schema_version": 1,
+  "created_at": "2026-10-31T06:09:37.773203+00:00",
+  "planner": {
+    "name": "model-partitioner",
+    "version": "0.1.0",
+    "algorithm": "dp-min-bottleneck-v1"
+  },
+  "model": {
+    "model_id": "gpt2",
+    "architecture": "gpt2",
+    "adapter": "gpt2 v1",
+    "n_layers": 12,
+    "hidden_size": 768,
+    "intermediate_size": 3072,
+    "n_heads": 12,
+    "n_kv_heads": 12,
+    "head_dim": 64,
+    "vocab_size": 50257,
+    "max_positions": 1024,
+    "total_params": 124439808,
+    "units": [
+      {
+        "index": 0,
+        "name": "embeddings",
+        "kind": "embedding",
+        "components": [
+          "transformer.wte",
+          "transformer.wpe",
+          "transformer.drop"
+        ],
+        "block_index": null
+      },
+      {
+        "index": 1,
+        "name": "block.0",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.0"
+        ],
+        "block_index": 0
+      },
+      {
+        "index": 2,
+        "name": "block.1",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.1"
+        ],
+        "block_index": 1
+      },
+      {
+        "index": 3,
+        "name": "block.2",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.2"
+        ],
+        "block_index": 2
+      },
+      {
+        "index": 4,
+        "name": "block.3",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.3"
+        ],
+        "block_index": 3
+      },
+      {
+        "index": 5,
+        "name": "block.4",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.4"
+        ],
+        "block_index": 4
+      },
+      {
+        "index": 6,
+        "name": "block.5",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.5"
+        ],
+        "block_index": 5
+      },
+      {
+        "index": 7,
+        "name": "block.6",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.6"
+        ],
+        "block_index": 6
+      },
+      {
+        "index": 8,
+        "name": "block.7",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.7"
+        ],
+        "block_index": 7
+      },
+      {
+        "index": 9,
+        "name": "block.8",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.8"
+        ],
+        "block_index": 8
+      },
+      {
+        "index": 10,
+        "name": "block.9",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.9"
+        ],
+        "block_index": 9
+      },
+      {
+        "index": 11,
+        "name": "block.10",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.10"
+        ],
+        "block_index": 10
+      },
+      {
+        "index": 12,
+        "name": "block.11",
+        "kind": "transformer_block",
+        "components": [
+          "transformer.h.11"
+        ],
+        "block_index": 11
+      },
+      {
+        "index": 13,
+        "name": "final_norm",
+        "kind": "final_norm",
+        "components": [
+          "transformer.ln_f"
+        ],
+        "block_index": null
+      },
+      {
+        "index": 14,
+        "name": "lm_head",
+        "kind": "lm_head",
+        "components": [
+          "lm_head"
+        ],
+        "block_index": null
+      }
+    ],
+    "tied_weights": [
+      [
+        "lm_head.weight",
+        "transformer.wte.weight"
+      ]
+    ],
+    "config_fingerprint": "b64029a8df27a797a98b7da584f9fc87942523761f13472b52e95e754ddbef22",
+    "config": {
+      "model_type": "gpt2",
+      "n_layer": 12,
+      "n_embd": 768,
+      "n_head": 12,
+      "n_inner": null,
+      "vocab_size": 50257,
+      "n_positions": 1024,
+      "activation_function": "gelu_new",
+      "layer_norm_epsilon": 1e-05,
+      "tie_word_embeddings": true
+    },
+    "checkpoint": {
+      "status": "verified",
+      "detail": "every model parameter is present in the checkpoint with an identical shape; checkpoint also stores 12 tensors that are not model parameters (e.g. h.0.attn.bias)",
+      "files": [
+        "model.safetensors"
+      ],
+      "stored_dtypes": [
+        "F32"
+      ],
+      "stored_values": 137022720,
+      "stored_bytes": 548090880,
+      "extra_values": 12582912,
+      "missing_params": [],
+      "shape_mismatches": [],
+      "extra_tensors_sample": [
+        "h.0.attn.bias",
+        "h.1.attn.bias",
+        "h.10.attn.bias",
+        "h.11.attn.bias",
+        "h.2.attn.bias"
+      ],
+      "extra_tensor_count": 12
+    },
+    "unit_memory": [
+      {
+        "unit": 0,
+        "name": "embeddings",
+        "kind": "embedding",
+        "params": 39383808,
+        "tied_params": 0,
+        "weight_bytes": 157535232,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 0,
+        "activation_peak_bytes": 3145728
+      },
+      {
+        "unit": 1,
+        "name": "block.0",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 2,
+        "name": "block.1",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 3,
+        "name": "block.2",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 4,
+        "name": "block.3",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 5,
+        "name": "block.4",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 6,
+        "name": "block.5",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 7,
+        "name": "block.6",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 8,
+        "name": "block.7",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 9,
+        "name": "block.8",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 10,
+        "name": "block.9",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 11,
+        "name": "block.10",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 12,
+        "name": "block.11",
+        "kind": "transformer_block",
+        "params": 7087872,
+        "tied_params": 0,
+        "weight_bytes": 28351488,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 6291456,
+        "activation_peak_bytes": 119537664
+      },
+      {
+        "unit": 13,
+        "name": "final_norm",
+        "kind": "final_norm",
+        "params": 1536,
+        "tied_params": 0,
+        "weight_bytes": 6144,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 0,
+        "activation_peak_bytes": 6291456
+      },
+      {
+        "unit": 14,
+        "name": "lm_head",
+        "kind": "lm_head",
+        "params": 0,
+        "tied_params": 38597376,
+        "weight_bytes": 0,
+        "weight_provenance": "CALCULATED",
+        "kv_cache_bytes": 0,
+        "activation_peak_bytes": 208998400
+      }
+    ]
+  },
+  "precision": {
+    "weight_dtype": "fp32",
+    "quantization": "none",
+    "activation_dtype": "fp32",
+    "kv_cache_dtype": "fp32",
+    "quant_group_size": 128,
+    "quantize_embeddings": false,
+    "quantize_lm_head": false,
+    "quantization_runtime_implemented": null
+  },
+  "workload": {
+    "batch_size": 1,
+    "context_length": 1024,
+    "prompt_length": 1024,
+    "cost_mode": "decode",
+    "logits_positions": "all"
+  },
+  "memory_policy": {
+    "runtime_overhead_bytes": 734003200,
+    "runtime_overhead_basis": "MEASURED on Computer 1: RSS after importing torch 2.10 + transformers 5.20 and building GPT-2 on the meta device (698-701 MiB); assumed for every worker",
+    "runtime_overhead_provenance": "MEASURED",
+    "extra_safety_fraction": 0.1,
+    "include_kv_cache": true,
+    "include_load_temp": true,
+    "checkpoint_dtype": "fp32"
+  },
+  "cost_model": {
+    "cpu_flops_per_cycle_per_core": 8.0,
+    "throughput_preference": "measured",
+    "account_for_utilization": true,
+    "link_bandwidth_bytes_per_s": null,
+    "link_latency_s": 0.0
+  },
+  "workers_considered": [
+    {
+      "worker_id": "computer-1",
+      "profile_source": "REAL",
+      "hostname": "YakobsPC",
+      "simulated_profile_name": "",
+      "origin": "local machine (Phase 3 profiler)"
+    }
+  ],
+  "feasible": false,
+  "objective": {
+    "type": "minimize_max_stage_time",
+    "cost_basis": "decode step (batch 1, context 1024)",
+    "bottleneck_seconds": null,
+    "total_seconds": null,
+    "seconds_provenance": "ESTIMATED",
+    "worker_order_search": "all 1 worker orders searched"
+  },
+  "stages": [],
+  "unused_workers": [
+    {
+      "worker_id": "computer-1",
+      "profile_source": "REAL",
+      "reason": "not used: no feasible plan",
+      "ram_total_bytes": 16876888064,
+      "ram_available_bytes": 1903542272,
+      "ram_usable_bytes": 215853466
+    }
+  ],
+  "includes_simulated_workers": false,
+  "executable": false,
+  "executable_reason": "infeasible",
+  "warnings": [
+    "Inter-stage transfer time is NOT modelled (no link bandwidth given); real pipelines pay it per boundary.",
+    "computer-1 throughput comes from a single noisy micro-benchmark: Phase 3 cpu matmul micro-benchmark (MEASURED once; ~10x run-to-run spread observed on Computer 1).",
+    "computer-1 is this planning machine (YakobsPC): its available RAM was measured while this planner process (~700 MiB, mostly torch + transformers) was running, so it is lower than a worker would see without the planner."
+  ],
+  "assumptions": [
+    "Stage time = calculated FLOPs / effective throughput; elementwise ops and memory-bandwidth limits are not modelled.",
+    "Memory covers a worst-case prefill of prompt_length tokens with a KV cache sized for context_length.",
+    "Activations assume eager attention (scores materialized) and are freed layer by layer.",
+    "The first stage holds the embeddings, the last stage the final norm and LM head (layer order is fixed)."
+  ],
+  "infeasibility": {
+    "reasons": [
+      "The whole model on one worker needs 1.56 GiB; the largest effective capacity is 185.27 MiB (computer-1); all usable workers together have 185.27 MiB.",
+      "Unit lm_head alone needs 1.17 GiB (including the per-worker runtime overhead), more than any worker can hold.",
+      "Every stage also pays a 700.00 MiB runtime overhead, so adding workers adds memory as well as capacity.",
+      "Options: shorter context_length/prompt_length, logits_positions='last', fp16/bf16 weights, or more/larger workers."
+    ]
+  },
+  "inputs_fingerprint": "9b0771939b2d01a8c77462d3b0a97959a4212f7d122b96c10fa8dc0c116fba25"
+}
